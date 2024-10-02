@@ -1,0 +1,44 @@
+# Maven target directory
+/target/
+
+# Maven specific files
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+
+# Eclipse specific files
+.classpath
+.project
+.settings/
+
+
+# Ignore logs and temporary files
+*.log
+*.tmp
+*.bak
+*.swp
+*.swo
+
+# Ignore compiled classes
+*.class
+
+# Ignore package files
+*.jar
+*.war
+*.ear
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Tomcat-specific files
+/.tomcat/
+*.pid
+
+# Ignore node_modules
+node_modules/
+
+# Ignore any generated config files
+*.properties
