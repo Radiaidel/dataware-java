@@ -2,6 +2,7 @@ package com.dataware.model;
 
 import com.dataware.model.enums.TaskStatus;
 
+import java.sql.Date;
 import java.time.LocalDate;
 
 import com.dataware.model.enums.TaskPriority;
@@ -14,14 +15,17 @@ public class Task {
 	private TaskStatus status;
 	private LocalDate creationDate;
 	private LocalDate dueDate;
+	private Member member;
+	private Project project;
 
 	public Task() {
 		
 	}
 	
+	
+
 	public Task(int id, String title, String description, TaskPriority priority, TaskStatus status,
-			LocalDate creationDate, LocalDate dueDate) {
-		super();
+			LocalDate creationDate, LocalDate dueDate, Member member, Project project) {
 		this.id = id;
 		this.title = title;
 		this.description = description;
@@ -29,7 +33,11 @@ public class Task {
 		this.status = status;
 		this.creationDate = creationDate;
 		this.dueDate = dueDate;
+		this.member = member;
+		this.project = project;
 	}
+
+
 
 	public int getId() {
 		return id;
@@ -86,6 +94,29 @@ public class Task {
 	public void setDueDate(LocalDate dueDate) {
 		this.dueDate = dueDate;
 	}
+
+	public Member getMember() {
+		return member;
+	}
+
+
+	public void setMember(Member member) {
+		this.member = member;
+	}
+
+
+
+	public Project getProject() {
+		return project;
+	}
+
+
+
+	public void setProject(Project project) {
+		this.project = project;
+	}
+
+
 
 	@Override
 	public String toString() {
