@@ -26,6 +26,7 @@ public class DatabaseConnection {
             String PASSWORD = properties.getProperty("db.password");
 
             connection = DriverManager.getConnection(URL, USER, PASSWORD);
+            System.out.println("gooooooooooooooooood");
         } catch (IOException | SQLException ex) {
             ex.printStackTrace();
             throw new RuntimeException("Failed to connect to the database");
