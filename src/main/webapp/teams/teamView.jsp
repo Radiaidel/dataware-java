@@ -5,67 +5,74 @@
 <html>
 <head>
     <title>Team Details</title>
-    <!-- Include Bootstrap CSS and JS if not already done -->
 </head>
 <body>
-    <h1>Team Details</h1>
-    <p><strong>ID:</strong> ${team.id}</p>
-    <p><strong>Name:</strong> ${team.name}</p>
+    <div class="container mt-5">
+        <h1 class="text-center">Team Details</h1>
+        <div class="card mb-4">
+            <div class="card-body">
+                <p><strong>ID:</strong> ${team.id}</p>
+                <p><strong>Name:</strong> ${team.name}</p>
+            </div>
+        </div>
 
-    <!-- Button to open modal for adding members -->
-    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createModal">
-        Add Members
-    </button>
+        <!-- Button to open modal for adding members -->
 
-    <a href="${pageContext.request.contextPath}/teams/team?action=list">Back to Team List</a>
+        <a href="${pageContext.request.contextPath}/teams/team?action=list" class="btn btn-link">Back to Team List</a>
+        
+        <div class="mt-4 flex flex-start">
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createModal">
+                Add Members
+            </button>
+        </div>
 
-    <!-- Display available members -->
-    <h2>Members of the team</h2>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>First Name</th>
-                <th>Last Name</th>
-                        <th>Actions</th>
-                
-            </tr>
-        </thead>
-        <tbody>
-            <c:forEach var="member" items="${membersoftheTeam}">
+        <!-- Display available members -->
+        <h2 class="mt-3">Members of the team</h2>
+        <table class="table table-striped">
+            <thead>
                 <tr>
-                    <td>${member.id}</td>
-                    <td>${member.firstName}</td>
-                    <td>${member.lastName}</td>
-                    <td>  <form action="${pageContext.request.contextPath}/member-team?action=remove" method="post" style="display:inline;">
-                    <input type="hidden" name="action" value="remove">
-                    <input type="hidden" name="teamId" value="${team.id}">
-                    <input type="hidden" name="memberId" value="${member.id}">
-                    
-                    <button type="submit" onclick="return confirm('Are you sure you want to remove this member?');">Remove</button>
-                </form>
-                   </td>
+                    <th>ID</th>
+                    <th>First Name</th>
+                    <th>Last Name</th>
+                    <th>Actions</th>
                 </tr>
-            </c:forEach>
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                <c:forEach var="member" items="${membersoftheTeam}">
+                    <tr>
+                        <td>${member.id}</td>
+                        <td>${member.firstName}</td>
+                        <td>${member.lastName}</td>
+                        <td>
+                            <form action="${pageContext.request.contextPath}/member-team?action=remove" method="post" style="display:inline;">
+                                <input type="hidden" name="action" value="remove">
+                                <input type="hidden" name="teamId" value="${team.id}">
+                                <input type="hidden" name="memberId" value="${member.id}">
+                                <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to remove this member?');">Remove</button>
+                            </form>
+                        </td>
+                    </tr>
+                </c:forEach>
+            </tbody>
+        </table>
 
-    <!-- Pagination controls -->
-    <nav>
-        <ul class="pagination">
-            <li class="page-item ${currentPage == 1 ? 'disabled' : ''}">
-                <a class="page-link" href="?action=view&id=${team.id}&page=${previousPage}">Previous</a>
-            </li>
-            <c:forEach begin="1" end="${lastPage}" var="i">
-                <li class="page-item ${currentPage == i ? 'active' : ''}">
-                    <a class="page-link" href="?action=view&id=${team.id}&page=${i}">${i}</a>
+        <!-- Pagination controls -->
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                <li class="page-item ${currentPage == 1 ? 'disabled' : ''}">
+                    <a class="page-link" href="?action=view&id=${team.id}&page=${previousPage}">Previous</a>
                 </li>
-            </c:forEach>
-            <li class="page-item ${currentPage == lastPage ? 'disabled' : ''}">
-                <a class="page-link" href="?action=view&id=${team.id}&page=${nextPage}">Next</a>
-            </li>
-        </ul>
-    </nav>
+                <c:forEach begin="1" end="${lastPage}" var="i">
+                    <li class="page-item ${currentPage == i ? 'active' : ''}">
+                        <a class="page-link" href="?action=view&id=${team.id}&page=${i}">${i}</a>
+                    </li>
+                </c:forEach>
+                <li class="page-item ${currentPage == lastPage ? 'disabled' : ''}">
+                    <a class="page-link" href="?action=view&id=${team.id}&page=${nextPage}">Next</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
 
     <!-- Include your modal for adding members -->
     <div class="modal fade" id="createModal" tabindex="-1" aria-labelledby="createModalLabel" aria-hidden="true">
@@ -82,7 +89,7 @@
 
                         <div class="mb-3">
                             <label for="memberId" class="form-label">Select Member:</label>
-                            <select name="memberId" id="memberId" class="form-control">
+                            <select name="memberId" id="memberId" class="form-select">
                                 <option value="">--Select Member--</option>
                                 <c:forEach var="member" items="${allMembers}">
                                     <option value="${member.id}">${member.firstName} ${member.lastName}</option>
@@ -99,7 +106,8 @@
             </div>
         </div>
     </div>
+
     <script src="${pageContext.request.contextPath}/js/bootstrap.min.js" type="text/javascript"></script>
-<script src="${pageContext.request.contextPath}/js/script.js"></script>
+    <script src="${pageContext.request.contextPath}/js/script.js"></script>
 </body>
 </html>
