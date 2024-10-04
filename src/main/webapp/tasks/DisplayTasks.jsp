@@ -57,12 +57,12 @@ body {
 }
 
 .badge-to-do {
-	background-color: #007bff; 
+	background-color: #007bff;
 	color: white;
 }
 
 .badge-doing {
-	background-color: #ffc107; 
+	background-color: #ffc107;
 	color: black;
 }
 
@@ -79,8 +79,8 @@ body {
 .priority span {
 	display: block;
 	width: 20px;
-	margin-bottom: 2px; 
-	background-color: orange; 
+	margin-bottom: 2px;
+	background-color: orange;
 }
 
 .priority-height {
@@ -96,7 +96,6 @@ body {
 				data-target="#taskModal">Add Task</button>
 		</div>
 
-		<!-- Modal pour ajouter une tâche -->
 		<div class="modal fade" id="taskModal" tabindex="-1" role="dialog"
 			aria-labelledby="taskModalLabel" aria-hidden="true">
 			<div class="modal-dialog" role="document">
@@ -109,18 +108,20 @@ body {
 						</button>
 					</div>
 					<div class="modal-body">
-						<form id="taskForm">
+						<form id="taskForm" action="${pageContext.request.contextPath}/tasks" method="post">
+							<input type="hidden" name="action" value="addtask">
 							<div class="form-group">
 								<label for="taskTitle">Title</label> <input type="text"
-									class="form-control" id="taskTitle" required>
+									class="form-control" id="taskTitle" name="title" required>
 							</div>
 							<div class="form-group">
 								<label for="taskDescription">Description</label>
-								<textarea class="form-control" id="taskDescription"></textarea>
+								<textarea class="form-control" id="taskDescription"
+									name="description"></textarea>
 							</div>
 							<div class="form-group">
 								<label for="taskPriority">Priority</label> <select
-									class="form-control" id="taskPriority" required>
+									class="form-control" id="taskPriority" name="priority" required>
 									<option value="Low">Low</option>
 									<option value="Medium">Medium</option>
 									<option value="High">High</option>
@@ -128,29 +129,33 @@ body {
 							</div>
 							<div class="form-group">
 								<label for="taskStatus">Status</label> <select
-									class="form-control" id="taskStatus" required>
-									<option value="To Do">To Do</option>
+									class="form-control" id="taskStatus" name="status" required>
+									<option value="To_Do">To Do</option>
 									<option value="Doing">Doing</option>
 									<option value="Done">Done</option>
 								</select>
 							</div>
+								<div class="form-group">
+								<label for="creationDate">Creation Date</label> <input type="date"
+									class="form-control" id="creationDate" name="creationDate" required>
+							</div>
 							<div class="form-group">
 								<label for="dueDate">Due Date</label> <input type="date"
-									class="form-control" id="dueDate" required>
+									class="form-control" id="dueDate" name="dueDate" required>
+							</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-secondary"
+									data-dismiss="modal">Cancel</button>
+								<button type="submit" class="btn btn-success">Submit</button>
 							</div>
 						</form>
+
 					</div>
-					<div class="modal-footer">
-						<button type="button" class="btn btn-secondary"
-							data-dismiss="modal">Cancel</button>
-						<button type="button" class="btn btn-success"
-							onclick="submitTask()">Submit</button>
-					</div>
+
 				</div>
 			</div>
 		</div>
 
-		<!-- Modal pour modifier une tâche -->
 		<div class="modal fade" id="editTaskModal" tabindex="-1" role="dialog"
 			aria-labelledby="editTaskModalLabel" aria-hidden="true">
 			<div class="modal-dialog" role="document">
@@ -204,7 +209,6 @@ body {
 			</div>
 		</div>
 
-		<!-- Liste des tâches -->
 		<div class="task-card ">
 			<div class="task-details">
 				<h5>Task 1: Design Mockups</h5>
@@ -272,40 +276,37 @@ body {
 			src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
 		<script>
-        function submitTask() {
-            const title = document.getElementById('taskTitle').value;
-            const description = document.getElementById('taskDescription').value;
-            const priority = document.getElementById('taskPriority').value;
-            const status = document.getElementById('taskStatus').value;
-            const dueDate = document.getElementById('dueDate').value;
+			function submitTask() {
+				const title = document.getElementById('taskTitle').value;
+				const description = document.getElementById('taskDescription').value;
+				const priority = document.getElementById('taskPriority').value;
+				const status = document.getElementById('taskStatus').value;
+				const dueDate = document.getElementById('dueDate').value;
 
-            // Logique pour ajouter la tâche ici (par exemple, envoyer les données au serveur)
-            console.log('New Task:', { title, description, priority, status, dueDate });
-            $('#taskModal').modal('hide'); // Ferme la modal
-        }
+				$('#taskModal').modal('hide');
+			}
 
-        function editTask(title, description, priority, status, dueDate) {
-            document.getElementById('editTaskTitle').value = title;
-            document.getElementById('editTaskDescription').value = description;
-            document.getElementById('editTaskPriority').value = priority;
-            document.getElementById('editTaskStatus').value = status;
-            document.getElementById('editDueDate').value = dueDate;
+			function editTask(title, description, priority, status, dueDate) {
+				document.getElementById('editTaskTitle').value = title;
+				document.getElementById('editTaskDescription').value = description;
+				document.getElementById('editTaskPriority').value = priority;
+				document.getElementById('editTaskStatus').value = status;
+				document.getElementById('editDueDate').value = dueDate;
 
-            $('#editTaskModal').modal('show'); // Ouvre la modal de modification
-        }
+				$('#editTaskModal').modal('show');
+			}
 
-        function updateTask() {
-            const title = document.getElementById('editTaskTitle').value;
-            const description = document.getElementById('editTaskDescription').value;
-            const priority = document.getElementById('editTaskPriority').value;
-            const status = document.getElementById('editTaskStatus').value;
-            const dueDate = document.getElementById('editDueDate').value;
+			function updateTask() {
+				const title = document.getElementById('editTaskTitle').value;
+				const description = document
+						.getElementById('editTaskDescription').value;
+				const priority = document.getElementById('editTaskPriority').value;
+				const status = document.getElementById('editTaskStatus').value;
+				const dueDate = document.getElementById('editDueDate').value;
 
-            // Logique pour mettre à jour la tâche ici (par exemple, envoyer les données au serveur)
-            console.log('Updated Task:', { title, description, priority, status, dueDate });
-            $('#editTaskModal').modal('hide'); // Ferme la modal
-        }
-    </script>
+				$('#editTaskModal').modal('hide');
+			}
+		</script>
 	</div>
 
 </body>
