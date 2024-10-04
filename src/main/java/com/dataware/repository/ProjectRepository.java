@@ -2,14 +2,15 @@ package com.dataware.repository;
 import java.util.List;
 
 import com.dataware.model.Project;
+import com.dataware.model.ProjectWithTeam;
 
 public interface ProjectRepository {
 	
 	void createProject(Project project);
 	
-	 Project getProjectById(int id);
+	ProjectWithTeam getProjectById(int id);
 	 
-	 List<Project> getAllProjects();
+	 List<Project> getAllProjects(int page, int size);
 	 
 	 void updateProject(Project project);
 	 
