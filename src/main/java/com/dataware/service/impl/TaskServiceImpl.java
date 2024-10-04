@@ -29,4 +29,11 @@ public class TaskServiceImpl implements TaskService {
 		return taskRepository.getTotalTasks();
 	}
 
+    public void deleteTask(int taskId) {
+   
+        taskRepository.deleteTask(taskId);
+    }
+    public void updateTask(Task task) {
+        taskRepository.updateTask(task);
+    }
 }

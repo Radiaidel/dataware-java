@@ -48,7 +48,7 @@ public class TaskRepositoryImpl implements TaskRepository {
 
 	@Override
 	public boolean updateTask(Task task) {
-		String query = "UPDATE `task` SET `title`=? ,`description`= ? ,`priority`= ? ,`status`= ? ,`creation_date`= ? ,`due_date`= ? ,`project_id`= ? ,`member_id`= ?  WHERE id = ?";
+		String query = "UPDATE `task` SET `title`=? ,`description`= ? ,`priority`= ? ,`status`= ? ,`creation_date`= ? ,`due_date`= ? ,`member_id`= ?  WHERE id = ?";
 
 		try (PreparedStatement pstmt = conn.prepareStatement(query)) {
 			pstmt.setString(1, task.getTitle());
@@ -57,10 +57,9 @@ public class TaskRepositoryImpl implements TaskRepository {
 			pstmt.setString(4, task.getStatus().toString());
 			pstmt.setDate(5, Date.valueOf(task.getCreationDate()));
 			pstmt.setDate(6, Date.valueOf(task.getDueDate()));
-			pstmt.setInt(7, task.getProject().getId());
-			pstmt.setInt(8, task.getMember().getId());
+			pstmt.setInt(7, task.getMember().getId());
 
-			pstmt.setInt(9, task.getId());
+			pstmt.setInt(8, task.getId());
 
 			return pstmt.executeUpdate() > 0;
 
@@ -126,7 +125,6 @@ public class TaskRepositoryImpl implements TaskRepository {
 				task.setProject(project);
 				task.setMember(member);
 				
-		        System.out.println(task.toString());
 
 				tasks.add(task);
 			}
