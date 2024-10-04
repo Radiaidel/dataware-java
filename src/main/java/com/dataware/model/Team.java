@@ -11,7 +11,7 @@ public class Team {
 
 	
 	public Team(int id, String name) {
-		super();
+		
 		this.id = id;
 		this.name = name;
 	}
@@ -43,6 +43,9 @@ public class Team {
 		this.members = members;
 	}
 	
+	 public void addMember(Member member) {
+	        this.members.add(member);
+	    }
 	
 
 }

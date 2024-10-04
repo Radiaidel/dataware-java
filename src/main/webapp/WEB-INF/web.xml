@@ -10,5 +10,23 @@
     <url-pattern>/teams/team</url-pattern>
 </servlet-mapping>
 
+    <servlet>
+    <servlet-name>MemberServlet</servlet-name>
+    <servlet-class>com.dataware.controller.MemberServlet</servlet-class>
+</servlet>
 
+<servlet-mapping>
+    <servlet-name>MemberServlet</servlet-name>
+    <url-pattern>/members/member</url-pattern>
+</servlet-mapping>
+
+    <servlet>
+    <servlet-name>MemberTeamServlet</servlet-name>
+    <servlet-class>com.dataware.controller.MemberTeamServlet</servlet-class>
+</servlet>
+
+<servlet-mapping>
+    <servlet-name>MemberTeamServlet</servlet-name>
+    <url-pattern>/member-team</url-pattern>
+</servlet-mapping>
 </web-app>

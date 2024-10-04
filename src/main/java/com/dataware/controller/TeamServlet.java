@@ -9,9 +9,16 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.dataware.model.Member;
 import com.dataware.model.Team;
+import com.dataware.repository.impl.MemberRepositoryImpl;
+import com.dataware.repository.impl.MemberTeamRepositoryImpl;
 import com.dataware.repository.impl.TeamRepositoryImpl;
+import com.dataware.service.MemberService;
+import com.dataware.service.MemberTeamService;
 import com.dataware.service.TeamService;
+import com.dataware.service.impl.MemberServiceImpl;
+import com.dataware.service.impl.MemberTeamServiceImpl;
 import com.dataware.service.impl.TeamServiceImpl;
 
 
@@ -20,6 +27,8 @@ import com.dataware.service.impl.TeamServiceImpl;
 public class TeamServlet extends HttpServlet {
 	
 	 private TeamService teamService;
+	 private MemberService memberService;
+	 private MemberTeamService memberTeamService;
 
 	 public TeamServlet() {
 		 super();
@@ -31,8 +40,11 @@ public class TeamServlet extends HttpServlet {
 	    public void init() throws ServletException {
 	        // Injecting the TeamRepositoryImpl into TeamServiceImpl
 	        teamService = new TeamServiceImpl(new TeamRepositoryImpl());
-	    }
+	        memberService = new MemberServiceImpl(new MemberRepositoryImpl()); // Initialize MemberService
+	        memberService = new MemberServiceImpl(new MemberRepositoryImpl()); 
+	        memberTeamService = new MemberTeamServiceImpl(new MemberTeamRepositoryImpl()); 
 
+	    }
     
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
@@ -90,12 +102,42 @@ public class TeamServlet extends HttpServlet {
 	    request.getRequestDispatcher("/teams/teamList.jsp").forward(request, response);
 	}
 
-	   private void viewTeam(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	  private void viewTeam(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 	        int teamId = Integer.parseInt(request.getParameter("id"));
-
 	        Optional<Team> teamOpt = teamService.getTeamById(teamId);
+
 	        if (teamOpt.isPresent()) {
-	            request.setAttribute("team", teamOpt.get());
+	            Team team = teamOpt.get();
+	            request.setAttribute("team", team);
+
+	            // Pagination for members
+	            int page = 1; // Default page
+	            int pageSize = 3; // Number of members per page
+
+	            // Get the current page number from the request
+	            if (request.getParameter("page") != null) {
+	                page = Integer.parseInt(request.getParameter("page"));
+	            }
+
+	            // Get total number of members to calculate the last page
+	            int totalMembers = memberService.getTotalMembers(); // Implement getMemberCount in MemberService
+	            int lastPage = (int) Math.ceil((double) totalMembers / pageSize);
+
+	            // Get the list of members for the current page
+	            List<Member> availableMembers = memberService.getAllMembers(page, pageSize); // Implement getAllMembers in MemberService
+	            List<Member> allMembers = memberService.getAllMembers(); // Implement getAllMembers in MemberService
+	            List<Member> membersoftheTeam = memberTeamService.getMembersOfTeam(team, page, pageSize);
+
+	            // Set attributes for pagination controls
+	            request.setAttribute("allMembers", allMembers);
+	            request.setAttribute("membersoftheTeam", membersoftheTeam);
+	            request.setAttribute("availableMembers", availableMembers);
+	            request.setAttribute("currentPage", page);
+	            request.setAttribute("previousPage", page > 1 ? page - 1 : 1);
+	            request.setAttribute("nextPage", page < lastPage ? page + 1 : lastPage);
+	            request.setAttribute("lastPage", lastPage);
+
+	            // Forward to the JSP page
 	            request.getRequestDispatcher("/teams/teamView.jsp").forward(request, response);
 	        } else {
 	            response.sendError(HttpServletResponse.SC_NOT_FOUND, "Team not found");

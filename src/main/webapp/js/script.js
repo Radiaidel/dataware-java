@@ -17,3 +17,27 @@ document.addEventListener('DOMContentLoaded', function () {
 		console.log(teamName, teamId);
     });
 });
+
+document.addEventListener('DOMContentLoaded', function () {
+    var editModal = document.getElementById('editModal');
+    editModal.addEventListener('show.bs.modal', function (event) {
+        var button = event.relatedTarget;
+        var id = button.getAttribute('data-id');
+        var firstName = button.getAttribute('data-firstname');
+        var lastName = button.getAttribute('data-lastname');
+        var email = button.getAttribute('data-email');
+        var role = button.getAttribute('data-role');
+
+        var modalId = editModal.querySelector('#editMemberId');
+        var modalFirstName = editModal.querySelector('#editFirstName');
+        var modalLastName = editModal.querySelector('#editLastName');
+        var modalEmail = editModal.querySelector('#editEmail');
+        var modalRole = editModal.querySelector('#editRole');
+
+        modalId.value = id;
+        modalFirstName.value = firstName;
+        modalLastName.value = lastName;
+        modalEmail.value = email;
+        modalRole.value = role;
+    });
+});
