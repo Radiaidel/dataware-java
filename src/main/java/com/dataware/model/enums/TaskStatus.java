@@ -19,4 +19,14 @@ public enum TaskStatus {
     public String toString() {
         return label;
     }
+
+    // Méthode pour obtenir l'énumération à partir d'une chaîne
+    public static TaskStatus fromString(String status) {
+        for (TaskStatus taskStatus : TaskStatus.values()) {
+            if (taskStatus.label.equalsIgnoreCase(status)) {
+                return taskStatus;
+            }
+        }
+        throw new IllegalArgumentException("Unknown status: " + status);
+    }
 }

@@ -3,7 +3,12 @@ package com.dataware.controller;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.logging.Logger;
 
+import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -17,8 +22,15 @@ import com.dataware.model.enums.TaskStatus;
 import com.dataware.service.impl.TaskServiceImpl;
 
 public class TaskControllerServlet extends HttpServlet {
-	
+
 	private TaskServiceImpl taskServiceImpl;
+	
+	
+
+	public TaskControllerServlet() {
+		super();
+		
+	}
 
 	public void init() {
 
@@ -67,7 +79,7 @@ public class TaskControllerServlet extends HttpServlet {
 				newTask.setMember(member);
 
 				taskServiceImpl.addTask(newTask);
-				
+
 			} catch (IllegalArgumentException e) {
 				response.sendError(HttpServletResponse.SC_BAD_REQUEST,
 						"Valeur de priorité ou de statut invalide : " + e.getMessage());
@@ -78,4 +90,20 @@ public class TaskControllerServlet extends HttpServlet {
 			}
 		}
 	}
+	
+
+	 protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+
+		 	String pageParam = request.getParameter("page");
+	        int pageNumber = (pageParam != null) ? Integer.parseInt(pageParam) : 1; 
+	        int pageSize = 10;
+
+	        Optional<List<Task>> optionalTasks = taskServiceImpl.displayAll(pageNumber, pageSize);
+	        request.setAttribute("tasks", optionalTasks.get());
+	        request.setAttribute("currentPage", pageNumber);
+	        request.setAttribute("totalTasks", taskServiceImpl.getTotalTasks());
+
+
+	        request.getRequestDispatcher("/tasks/DisplayTasks.jsp").forward(request, response);
+	    }
 }

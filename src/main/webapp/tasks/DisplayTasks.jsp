@@ -1,5 +1,11 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
+
+
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<%@ page import="java.util.List"%>
+<%@ page import="com.dataware.model.Task"%>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -108,7 +114,8 @@ body {
 						</button>
 					</div>
 					<div class="modal-body">
-						<form id="taskForm" action="${pageContext.request.contextPath}/tasks" method="post">
+						<form id="taskForm"
+							action="${pageContext.request.contextPath}/tasks" method="post">
 							<input type="hidden" name="action" value="addtask">
 							<div class="form-group">
 								<label for="taskTitle">Title</label> <input type="text"
@@ -130,14 +137,15 @@ body {
 							<div class="form-group">
 								<label for="taskStatus">Status</label> <select
 									class="form-control" id="taskStatus" name="status" required>
-									<option value="To_Do">To Do</option>
+									<option value="TO_DO">To Do</option>
 									<option value="Doing">Doing</option>
 									<option value="Done">Done</option>
 								</select>
 							</div>
-								<div class="form-group">
-								<label for="creationDate">Creation Date</label> <input type="date"
-									class="form-control" id="creationDate" name="creationDate" required>
+							<div class="form-group">
+								<label for="creationDate">Creation Date</label> <input
+									type="date" class="form-control" id="creationDate"
+									name="creationDate" required>
 							</div>
 							<div class="form-group">
 								<label for="dueDate">Due Date</label> <input type="date"
@@ -209,104 +217,101 @@ body {
 			</div>
 		</div>
 
-		<div class="task-card ">
-			<div class="task-details">
-				<h5>Task 1: Design Mockups</h5>
-				<p>Description: Design wireframes for the landing page.</p>
-			</div>
-			<div class="task-meta">
-				<div class="status px-5">
-					<span class="badge badge-to-do">To Do</span>
-				</div>
-				<div class="priority px-5">
-					<span class="priority-height priority-low"></span>
-				</div>
-				<div class="member px-5 ">John Doe</div>
-				<button class="btn btn-warning btn-sm ml-3"
-					onclick="editTask('Task 1: Design Mockups', 'Design wireframes for the landing page.', 'Low', 'To Do', '2024-10-01')">Edit</button>
-			</div>
-		</div>
 
-		<div class="task-card">
-			<div class="task-details">
-				<h5>Task 2: Define APIs</h5>
-				<p>Description: Define API endpoints for user management.</p>
-			</div>
-			<div class="task-meta">
-				<div class="status px-5">
-					<span class="badge badge-doing">Doing</span>
-				</div>
-				<div class="priority px-5">
-					<span class="priority-height priority-medium"></span> <span
-						class="priority-height priority-medium"></span>
-
-				</div>
-				<div class="member px-5">Jane Smith</div>
-				<button class="btn btn-warning btn-sm ml-3"
-					onclick="editTask('Task 2: Define APIs', 'Define API endpoints for user management.', 'Medium', 'Doing', '2024-10-02')">Edit</button>
-			</div>
-		</div>
-
-		<div class="task-card">
-			<div class="task-details">
-				<h5>Task 3: Implement Login</h5>
-				<p>Description: Implement the login functionality.</p>
-			</div>
-			<div class="task-meta">
-				<div class="status px-5">
-					<span class="badge badge-done">Done</span>
-				</div>
-				<div class="priority px-5">
-					<span class="priority-height priority-high"></span> <span
-						class="priority-height priority-high"></span> <span
-						class="priority-height priority-high"></span>
-
-				</div>
-				<div class="member px-5">Alice Johnson</div>
-				<button class="btn btn-warning btn-sm ml-3"
-					onclick="editTask('Task 3: Implement Login', 'Implement the login functionality.', 'High', 'Done', '2024-09-30')">Edit</button>
-			</div>
-		</div>
-
-		<!-- Scripts -->
-		<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-		<script
-			src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
-		<script
-			src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-
-		<script>
-			function submitTask() {
-				const title = document.getElementById('taskTitle').value;
-				const description = document.getElementById('taskDescription').value;
-				const priority = document.getElementById('taskPriority').value;
-				const status = document.getElementById('taskStatus').value;
-				const dueDate = document.getElementById('dueDate').value;
-
-				$('#taskModal').modal('hide');
+		<table border="1">
+			<tr>
+				<th>ID</th>
+				<th>Title</th>
+				<th>Description</th>
+				<th>Priority</th>
+				<th>Status</th>
+				<th>Creation Date</th>
+				<th>Due Date</th>
+				<th>Project</th>
+				<th>Assigned Member</th>
+			</tr>
+			<%
+			List<Task> tasks = (List<Task>) request.getAttribute("tasks");
+			for (Task task : tasks) {
+			%>
+			<tr>
+				<td><%=task.getId()%></td>
+				<td><%=task.getTitle()%></td>
+				<td><%=task.getDescription()%></td>
+				<td><%=task.getPriority()%></td>
+				<td><%=task.getStatus()%></td>
+				<td><%=task.getCreationDate()%></td>
+				<td><%=task.getDueDate()%></td>
+				<td><%=task.getProject().getName()%></td>
+				<td><%=task.getMember().getFirstName() + " " + task.getMember().getLastName()%></td>
+			</tr>
+			<%
 			}
+			%>
+		</table>
 
-			function editTask(title, description, priority, status, dueDate) {
-				document.getElementById('editTaskTitle').value = title;
-				document.getElementById('editTaskDescription').value = description;
-				document.getElementById('editTaskPriority').value = priority;
-				document.getElementById('editTaskStatus').value = status;
-				document.getElementById('editDueDate').value = dueDate;
+		<%
+		// Pagination logic
+		int currentPage = (Integer) request.getAttribute("currentPage");
+		int totalTasks = (Integer) request.getAttribute("totalTasks");  // Méthode à créer pour obtenir le nombre total de tâches
+		int totalPages = (int) Math.ceil((double) totalTasks / 10); // Supposant que pageSize = 10
 
-				$('#editTaskModal').modal('show');
-			}
+		if (currentPage > 1) {
+		%>
+		<a href="tasks?page=<%=currentPage - 1%>">Previous</a>
+		<%
+		}
+		if (currentPage < totalPages) {
+		%>
+		<a href="tasks?page=<%=currentPage + 1%>">Next</a>
+		<%
+		}
+		%>
 
-			function updateTask() {
-				const title = document.getElementById('editTaskTitle').value;
-				const description = document
-						.getElementById('editTaskDescription').value;
-				const priority = document.getElementById('editTaskPriority').value;
-				const status = document.getElementById('editTaskStatus').value;
-				const dueDate = document.getElementById('editDueDate').value;
 
-				$('#editTaskModal').modal('hide');
-			}
-		</script>
+	</div>
+
+
+
+
+	<!-- Scripts -->
+	<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+	<script
+		src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+	<script
+		src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+	<script>
+		function submitTask() {
+			const title = document.getElementById('taskTitle').value;
+			const description = document.getElementById('taskDescription').value;
+			const priority = document.getElementById('taskPriority').value;
+			const status = document.getElementById('taskStatus').value;
+			const dueDate = document.getElementById('dueDate').value;
+
+			$('#taskModal').modal('hide');
+		}
+
+		function editTask(title, description, priority, status, dueDate) {
+			document.getElementById('editTaskTitle').value = title;
+			document.getElementById('editTaskDescription').value = description;
+			document.getElementById('editTaskPriority').value = priority;
+			document.getElementById('editTaskStatus').value = status;
+			document.getElementById('editDueDate').value = dueDate;
+
+			$('#editTaskModal').modal('show');
+		}
+
+		function updateTask() {
+			const title = document.getElementById('editTaskTitle').value;
+			const description = document.getElementById('editTaskDescription').value;
+			const priority = document.getElementById('editTaskPriority').value;
+			const status = document.getElementById('editTaskStatus').value;
+			const dueDate = document.getElementById('editDueDate').value;
+
+			$('#editTaskModal').modal('hide');
+		}
+	</script>
 	</div>
 
 </body>

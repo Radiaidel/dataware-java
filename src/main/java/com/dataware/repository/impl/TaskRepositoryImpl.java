@@ -87,59 +87,68 @@ public class TaskRepositoryImpl implements TaskRepository {
 
 		int offset = (pageNumber - 1) * pageSize;
 
-	    String query = "SELECT t.id as `task_id`, t.title, t.description as `task_description`, t.priority, t.status as `task_status`, " +
-	                   "t.creation_date, t.due_date, p.id as `project_id`, p.name, p.description as `project_description`, " +
-	                   "p.start_date, p.end_date, p.status as `project_status`, m.id as `member_id`, m.first_name, m.last_name, " +
-	                   "m.email, m.role " +
-	                   "FROM `task` t " +
-	                   "JOIN `project` p ON p.id = t.project_id " +
-	                   "JOIN `member` m ON m.id = t.member_id " +
-	                   "LIMIT ? OFFSET ?;";
+		String query = "SELECT t.id as `task_id`, t.title, t.description as `task_description`, t.priority, t.status as `task_status`, "
+				+ "t.creation_date, t.due_date, p.id as `project_id`, p.name, p.description as `project_description`, "
+				+ "p.start_date, p.end_date, p.status as `project_status`, m.id as `member_id`, m.first_name, m.last_name, "
+				+ "m.email, m.role " + "FROM `task` t " + "JOIN `project` p ON p.id = t.project_id "
+				+ "JOIN `member` m ON m.id = t.member_id " + "LIMIT ? OFFSET ?;";
 
-	    List<Task> tasks = new ArrayList<>();
+		List<Task> tasks = new ArrayList<>();
 
-	    try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+		try (PreparedStatement pstmt = conn.prepareStatement(query)) {
 
-	    	pstmt.setInt(1, pageSize);
-	        pstmt.setInt(2, offset);
+			pstmt.setInt(1, pageSize);
+			pstmt.setInt(2, offset);
 
-	        ResultSet rs = pstmt.executeQuery();
-	        while (rs.next()) {
-	            Project project = new Project();
-	            project.setId(rs.getInt("project_id"));
-	            project.setName(rs.getString("name"));
-	            project.setDescription(rs.getString("project_description"));
-	            project.setStartDate(rs.getDate("start_date").toLocalDate());
-	            project.setEndDate(rs.getDate("end_date").toLocalDate());
-	            project.setStatus(ProjectStatus.valueOf(rs.getString("project_status")));
+			ResultSet rs = pstmt.executeQuery();
+			while (rs.next()) {
+				Project project = new Project();
+				project.setId(rs.getInt("project_id"));
+				project.setName(rs.getString("name"));
+				project.setDescription(rs.getString("project_description"));
+		
+				
+				Member member = new Member();
+				member.setId(rs.getInt("member_id"));
+				member.setFirstName(rs.getString("first_name"));
+				member.setLastName(rs.getString("last_name"));
+				member.setEmail(rs.getString("email"));
 
-	            Member member = new Member();
-	            member.setId(rs.getInt("member_id"));
-	            member.setFirstName(rs.getString("first_name"));
-	            member.setLastName(rs.getString("last_name"));
-	            member.setEmail(rs.getString("email"));
-	            member.setRole(MemberRole.valueOf(rs.getString("role")));
+				Task task = new Task();
+				task.setId(rs.getInt("task_id"));
+				task.setTitle(rs.getString("title"));
+				task.setDescription(rs.getString("task_description"));
+				task.setPriority(TaskPriority.fromString(rs.getString("priority")));
+				 task.setStatus(TaskStatus.fromString(rs.getString("task_status")));
+//				task.setStatus(TaskStatus.valueOf());
+				task.setCreationDate(rs.getDate("creation_date").toLocalDate());
+				task.setDueDate(rs.getDate("due_date").toLocalDate());
+				task.setProject(project);
+				task.setMember(member);
+				
+		        System.out.println(task.toString());
 
-	            Task task = new Task();
-	            task.setId(rs.getInt("task_id"));
-	            task.setTitle(rs.getString("title"));
-	            task.setDescription(rs.getString("task_description"));
-	            task.setPriority(TaskPriority.valueOf(rs.getString("priority")));
-	            task.setStatus(TaskStatus.valueOf(rs.getString("task_status")));
-	            task.setCreationDate(rs.getDate("creation_date").toLocalDate());
-	            task.setDueDate(rs.getDate("due_date").toLocalDate());
-	            task.setProject(project);
-	            task.setMember(member);
+				tasks.add(task);
+			}
 
-	            tasks.add(task);
-	        }
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
 
-	    } catch (SQLException e) {
-	        e.printStackTrace();
-	    }
-
-	    return tasks.isEmpty() ? Optional.empty() : Optional.of(tasks);
+		return tasks.isEmpty() ? Optional.empty() : Optional.of(tasks);
 	}
 
+	public int getTotalTasks() {
+		String query = "SELECT COUNT(*) FROM task"; 
 
+		try (PreparedStatement pstmt = conn.prepareStatement(query); ResultSet rs = pstmt.executeQuery()) {
+			if (rs.next()) {
+				return rs.getInt(1);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return 0;
+	}
 }

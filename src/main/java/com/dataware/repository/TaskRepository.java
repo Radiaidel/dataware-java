@@ -10,4 +10,5 @@ public interface TaskRepository {
 	boolean updateTask(Task task);
 	boolean deleteTask(int id);
 	Optional<List<Task>> displayAll(int pageNumber, int pageSize);
+	int getTotalTasks();
 }
