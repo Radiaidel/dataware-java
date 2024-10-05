@@ -27,21 +27,26 @@ public class MemberServlet extends HttpServlet {
         super();
     }
     
+ // New constructor for dependency injection in tests
+    public MemberServlet(MemberService memberService) {
+        this.memberService = memberService;
+    }
+    
+    
     @Override
     public void init() throws ServletException {
-        // Injecting the MemberRepositoryImpl into MemberServiceImpl
         memberService = new MemberServiceImpl(new MemberRepositoryImpl());
-        logger.info("MemberService initialized."); // Log message on initialization
+        logger.info("MemberService initialized."); 
     }
 
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String action = request.getParameter("action");
 
         if (action == null) {
             action = "list";
         }
 
-        logger.info("Action requested: {}", action); // Log the requested action
+        logger.info("Action requested: {}", action); 
 
         switch (action) {
             case "list":
@@ -124,7 +129,7 @@ public class MemberServlet extends HttpServlet {
     }
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String action = request.getParameter("action");
         switch (action) {
             case "create":
