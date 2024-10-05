@@ -25,11 +25,47 @@
 		</button>
 
 	</nav>
+	<!-- Back Button -->
+	<div class="text-center mt-4">
+		<a href="${pageContext.request.contextPath}/projects?action=list"
+			class="btn btn-outline-primary"> <i class="bi bi-arrow-left me-2"></i>Back
+			to Project List
+		</a>
+	</div>
+
+
+
 
 
 
 	<div class="container mt-5">
-		<h3 class="text-center mt-4">List of Tasks</h3>
+		<!-- Teams Section -->
+		<div class="card shadow-lg mt-4">
+			<div class="card-header bg-secondary text-white">
+				<h4>Teams Working on this Project</h4>
+			</div>
+			<div class="card-body">
+				<c:choose>
+					<c:when test="${not empty teams}">
+						<ul class="list-group">
+							<c:forEach var="team" items="${teams}">
+								<li class="list-group-item"><i
+									class="bi bi-people-fill me-2" aria-hidden="true"></i> <c:out
+										value="${team.name}" /></li>
+							</c:forEach>
+						</ul>
+					</c:when>
+					<c:otherwise>
+						<p class="text-danger">This project has no team assigned.</p>
+						<a
+							href="${pageContext.request.contextPath}/teams?action=add&projectId=${project.id}"
+							class="btn btn-success"> <i class="bi bi-plus-circle me-2"></i>Add
+							Team
+						</a>
+					</c:otherwise>
+				</c:choose>
+			</div>
+		</div>
 		<hr>
 
 		<div class="text-right mb-3">
@@ -71,12 +107,14 @@
 								value="${task.member.firstName} ${task.member.lastName}" /></td>
 						<td>
 							<button class="btn btn-warning btn-sm"
-								onclick="editTask('${task.title}', '${task.description}', '${task.priority}', '${task.status}', '${task.dueDate}', '${task.creationDate}','${task.id}')">
+								onclick="editTask('${task.title}', '${task.description}', '${task.priority}', '${task.status}', '${task.dueDate}', '${task.creationDate}', '${task.id}', '${task.member.id}')">
 								Edit</button>
 							<form action="${pageContext.request.contextPath}/tasks"
 								method="post" style="display: inline;">
 								<input type="hidden" name="action" value="deletetask"> <input
-									type="hidden" name="taskId" value="${task.id}">
+									type="hidden" name="taskId" value="${task.id}"> <input
+									type="hidden" name="projectId" value="${project.id}">
+
 								<button type="submit"
 									onclick="return confirm('Are you sure you want to delete this task?');"
 									class="btn btn-danger btn-sm">Delete</button>
@@ -128,8 +166,10 @@
 				<div class="modal-body">
 					<form id="taskForm"
 						action="${pageContext.request.contextPath}/tasks" method="post">
-						<input type="hidden" name="action" value="addtask">
+						<input type="hidden" name="action" value="addtask"> <input
+							type="hidden" name="projectId" value="${project.id}">
 						<div class="form-group">
+
 							<label for="taskTitle">Title</label> <input type="text"
 								class="form-control" id="taskTitle" name="title" required>
 						</div>
@@ -163,6 +203,24 @@
 							<label for="dueDate">Due Date</label> <input type="date"
 								class="form-control" id="dueDate" name="dueDate" required>
 						</div>
+						<div class="form-group">
+							<label for="assignedMember">Assign to Member</label> <select
+								class="form-control" id="assignedMember" name="assignedMember"
+								required>
+								<c:choose>
+									<c:when test="${not empty members}">
+										<c:forEach var="member" items="${members}">
+											<option value="${member.id}">${member.firstName}
+												${member.lastName}</option>
+										</c:forEach>
+									</c:when>
+									<c:otherwise>
+										<option disabled>No members available</option>
+									</c:otherwise>
+								</c:choose>
+							</select>
+						</div>
+
 						<div class="modal-footer">
 							<button type="button" class="btn btn-secondary"
 								data-dismiss="modal">Cancel</button>
@@ -174,7 +232,9 @@
 		</div>
 	</div>
 
-	<!-- Modal for Editing Task -->
+
+
+
 	<div class="modal fade" id="editTaskModal" tabindex="-1" role="dialog"
 		aria-labelledby="editTaskModalLabel" aria-hidden="true">
 		<div class="modal-dialog" role="document">
@@ -190,7 +250,8 @@
 					<form id="editTaskForm"
 						action="${pageContext.request.contextPath}/tasks" method="post">
 						<input type="hidden" name="action" value="updatetask"> <input
-							type="hidden" name="taskId" id="editTaskId">
+							type="hidden" name="taskId" id="editTaskId"> <input
+							type="hidden" name="projectId" value="${project.id}">
 						<div class="form-group">
 							<label for="editTaskTitle">Title</label> <input type="text"
 								class="form-control" id="editTaskTitle" name="title" required>
@@ -204,39 +265,59 @@
 							<label for="editTaskPriority">Priority</label> <select
 								class="form-control" id="editTaskPriority" name="priority"
 								required>
-								<option value="Low">Low</option>
-								<option value="Medium">Medium</option>
-								<option value="High">High</option>
+								<option value="LOW">Low</option>
+								<option value="MEDIUM">Medium</option>
+								<option value="HIGH">High</option>
 							</select>
 						</div>
+
+
 						<div class="form-group">
 							<label for="editTaskStatus">Status</label> <select
 								class="form-control" id="editTaskStatus" name="status" required>
-								<option value="To Do">To Do</option>
-								<option value="Doing">Doing</option>
-								<option value="Done">Done</option>
+								<option value="TO_DO">To Do</option>
+								<option value="DOING">Doing</option>
+								<option value="DONE">Done</option>
 							</select>
 						</div>
+
+
 						<div class="form-group">
-							<label for="editCreationDate">Creation Date</label> <input
-								type="date" class="form-control" id="editCreationDate"
+							<label for="editTaskCreationDate">Creation Date</label> <input
+								type="date" class="form-control" id="editTaskCreationDate"
 								name="creationDate" required>
 						</div>
 						<div class="form-group">
-							<label for="editDueDate">Due Date</label> <input type="date"
-								class="form-control" id="editDueDate" name="dueDate" required>
+							<label for="editTaskDueDate">Due Date</label> <input type="date"
+								class="form-control" id="editTaskDueDate" name="dueDate"
+								required>
 						</div>
+						<div class="form-group">
+							<label for="assignedMember">Assign to Member</label> <select
+								class="form-control" id="editAssignedMember"
+								name="assignedMember" required>
+								<c:forEach var="member" items="${members}">
+									<option value="${member.id}">
+										${member.firstName} ${member.lastName}</option>
+								</c:forEach>
+							</select>
+
+						</div>
+
 						<div class="modal-footer">
 							<button type="button" class="btn btn-secondary"
 								data-dismiss="modal">Cancel</button>
-							<button type="submit" class="btn btn-success">Save
-								Changes</button>
+							<button type="submit" class="btn btn-success">Update
+								Task</button>
 						</div>
 					</form>
 				</div>
 			</div>
 		</div>
 	</div>
+
+
+
 
 
 	<!-- Scripts -->
@@ -258,20 +339,22 @@
 		}
 
 		function editTask(title, description, priority, status, dueDate,
-				creationDate, taskId) {
-			document.getElementById("editTaskTitle").value = title;
-			document.getElementById("editTaskDescription").value = description;
+				creationDate, taskId, memberId) {
+
+			document.getElementById('editTaskTitle').value = title;
+			document.getElementById('editTaskDescription').value = description;
 			document.getElementById("editTaskPriority").value = priority;
 			document.getElementById("editTaskStatus").value = status;
-			document.getElementById("editDueDate").value = dueDate;
-			document.getElementById("editCreationDate").value = creationDate; // Ajoutez ceci pour pré-remplir la date de création
-			document.getElementById("editTaskId").value = taskId;
+			document.getElementById('editTaskDueDate').value = dueDate;
+			document.getElementById('editTaskCreationDate').value = creationDate;
+			document.getElementById('editTaskId').value = taskId;
 
-			// Afficher le modal
+			document.getElementById('assignedMember').value = memberId;
+
 			$('#editTaskModal').modal('show');
+
 		}
 	</script>
-	</div>
 
 </body>
 </html>

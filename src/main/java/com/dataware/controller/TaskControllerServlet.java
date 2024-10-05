@@ -35,91 +35,33 @@ public class TaskControllerServlet extends HttpServlet {
 		taskServiceImpl = new TaskServiceImpl();
 	}
 
-//	protected void doPost(HttpServletRequest request, HttpServletResponse response)
-//			throws ServletException, IOException {
-//		String action = request.getParameter("action");
-//
-//		if ("addtask".equals(action)) {
-//			String title = request.getParameter("title");
-//			String description = request.getParameter("description");
-//			String priorityStr = request.getParameter("priority");
-//			String statusStr = request.getParameter("status");
-//			String dueDate = request.getParameter("dueDate");
-//			String creationDate = request.getParameter("creationDate");
-//
-//			if (title == null || title.trim().isEmpty() || description == null || description.trim().isEmpty()
-//					|| priorityStr == null || statusStr == null || dueDate == null || creationDate == null) {
-//				response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Tous les champs sont requis.");
-//				return;
-//			}
-//
-//			try {
-//				TaskPriority priority = TaskPriority.valueOf(priorityStr.toUpperCase());
-//				TaskStatus status = TaskStatus.valueOf(statusStr.toUpperCase());
-//
-//				LocalDate parsedCreationDate = LocalDate.parse(creationDate);
-//				LocalDate parsedDueDate = LocalDate.parse(dueDate);
-//
-//				Member member = new Member();
-//				member.setId(1);
-//
-//				Project project = new Project();
-//				project.setId(1);
-//
-//				Task newTask = new Task();
-//				newTask.setTitle(title);
-//				newTask.setDescription(description);
-//				newTask.setPriority(priority);
-//				newTask.setStatus(status);
-//				newTask.setCreationDate(parsedCreationDate);
-//				newTask.setDueDate(parsedDueDate);
-//				newTask.setProject(project);
-//				newTask.setMember(member);
-//
-//				taskServiceImpl.addTask(newTask);
-//
-//			} catch (IllegalArgumentException e) {
-//				response.sendError(HttpServletResponse.SC_BAD_REQUEST,
-//						"Valeur de priorité ou de statut invalide : " + e.getMessage());
-//			} catch (DateTimeParseException e) {
-//				response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Format de date invalide : " + e.getMessage());
-//			} catch (Exception e) {
-//				e.printStackTrace();
-//			}
-//		}
-//		else if ("deletetask".equals(action)) {
-//            String taskIdStr = request.getParameter("taskId");
-//            try {
-//                int taskId = Integer.parseInt(taskIdStr);
-//                taskServiceImpl.deleteTask(taskId); 
-//                
-//            } catch (NumberFormatException e) {
-//
-//            	e.printStackTrace();
-//                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid task ID");
-//            }
-//        }
-//		
-//        response.sendRedirect(request.getContextPath() + "/tasks");
-//
-//		
-//
-//	}
-//	
-
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-
+		String projectIdParam = request.getParameter("id");
 		String pageParam = request.getParameter("page");
 		int pageNumber = (pageParam != null) ? Integer.parseInt(pageParam) : 1;
 		int pageSize = 10;
 
-		Optional<List<Task>> optionalTasks = taskServiceImpl.displayAll(pageNumber, pageSize);
-		request.setAttribute("tasks", optionalTasks.get());
-		request.setAttribute("currentPage", pageNumber);
-		request.setAttribute("totalTasks", taskServiceImpl.getTotalTasks());
+		if (projectIdParam != null && !projectIdParam.isEmpty()) {
+			int projectId = Integer.parseInt(projectIdParam);
 
-		request.getRequestDispatcher("/tasks/DisplayTasks.jsp").forward(request, response);
+			Optional<List<Task>> optionalTasks = taskServiceImpl.getTasksByProjectId(projectId, pageNumber, pageSize);
+
+			if (optionalTasks.isPresent()) {
+				request.setAttribute("tasks", optionalTasks.get());
+				request.setAttribute("currentPage", pageNumber);
+				request.setAttribute("totalTasks", taskServiceImpl.getTotalTasks());
+
+				RequestDispatcher dispatcher = request.getRequestDispatcher("/tasks/DisplayTasks.jsp");
+				dispatcher.forward(request, response);
+			} else {
+				request.setAttribute("errorMessage", "No tasks found for this project.");
+				RequestDispatcher dispatcher = request.getRequestDispatcher("/tasks/DisplayTasks.jsp");
+				dispatcher.forward(request, response);
+			}
+		} else {
+			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Project ID is required.");
+		}
 	}
 
 	@Override
@@ -144,7 +86,8 @@ public class TaskControllerServlet extends HttpServlet {
 			break;
 		}
 
-		response.sendRedirect(request.getContextPath() + "/tasks");
+		 String projectId = request.getParameter("projectId"); 
+         response.sendRedirect(request.getContextPath() + "/projects?action=details&id=" + projectId);
 	}
 
 	private void addTask(HttpServletRequest request) throws Exception {
@@ -155,6 +98,8 @@ public class TaskControllerServlet extends HttpServlet {
 			String statusStr = request.getParameter("status");
 			String dueDate = request.getParameter("dueDate");
 			String creationDate = request.getParameter("creationDate");
+			int memberId = Integer.valueOf(request.getParameter("assignedMember"));
+			int projectId = Integer.valueOf(request.getParameter("projectId"));
 
 			validateTaskInput(title, description, priorityStr, statusStr, dueDate, creationDate);
 
@@ -164,10 +109,10 @@ public class TaskControllerServlet extends HttpServlet {
 			LocalDate parsedDueDate = LocalDate.parse(dueDate);
 
 			Member member = new Member();
-			member.setId(1); // Remplacez par la logique réelle pour obtenir l'utilisateur connecté
+			member.setId(memberId);
 
 			Project project = new Project();
-			project.setId(1); // Remplacez par la logique réelle pour obtenir le projet concerné
+			project.setId(projectId);
 
 			Task newTask = new Task();
 			newTask.setTitle(title);
@@ -198,6 +143,8 @@ public class TaskControllerServlet extends HttpServlet {
 		String statusStr = request.getParameter("status").trim();
 		String dueDateStr = request.getParameter("dueDate");
 		String creationDate = request.getParameter("creationDate");
+		int memberId = Integer.valueOf(request.getParameter("assignedMember"));
+
 		try {
 			task.setId(taskId);
 			task.setTitle(title);
@@ -207,14 +154,14 @@ public class TaskControllerServlet extends HttpServlet {
 			task.setStatus(TaskStatus.fromString(statusStr));
 			task.setDueDate(LocalDate.parse(dueDateStr));
 			task.setCreationDate(LocalDate.parse(creationDate));
-			Member member = new Member();
-			member.setId(1);
-			task.setMember(member);
-			 taskServiceImpl.updateTask(task);
-			
-			
 
-			
+			Member member = new Member();
+			member.setId(memberId);
+			task.setMember(member);
+
+
+			taskServiceImpl.updateTask(task);
+
 		} catch (IllegalArgumentException e) {
 			e.printStackTrace();
 		} catch (DateTimeParseException e) {
