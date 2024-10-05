@@ -4,9 +4,9 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Dataware</title>
+<title>Insert title here</title>
 </head>
 <body>
-<h1>hello there !  abdellahg </h1>
+
 </body>
 </html>

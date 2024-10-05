@@ -19,8 +19,10 @@ public class DatabaseConnection {
         try (InputStream input = getClass().getClassLoader().getResourceAsStream("application.properties")) {
             if (input == null) {
                 throw new RuntimeException("Sorry, unable to find application.properties");
+                throw new RuntimeException("Sorry, unable to find application.properties");
             }
             properties.load(input);
+
             String URL = properties.getProperty("db.url");
             String USER = properties.getProperty("db.username");
             String PASSWORD = properties.getProperty("db.password");
@@ -30,7 +32,7 @@ public class DatabaseConnection {
             System.out.println("Database connection established");
         } catch (IOException | SQLException ex) {
             ex.printStackTrace();
-            throw new RuntimeException("Failed to connect to the database");
+            throw new RuntimeException("Failed to connect to the database", ex);
         }
     }
 
@@ -44,6 +46,15 @@ public class DatabaseConnection {
     }
 
     public Connection getConnection() {
+        try {
+            if (connection == null || connection.isClosed()) {
+                // Re-establish the connection if it's closed
+                System.out.println("Connection was closed, re-establishing...");
+                reconnect();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         return connection;
     }
 }

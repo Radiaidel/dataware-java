@@ -7,6 +7,6 @@
 <title>Dataware</title>
 </head>
 <body>
-<h1>hello there !  abdellahg </h1>
+<h1>hello there ! </h1>
 </body>
 </html>

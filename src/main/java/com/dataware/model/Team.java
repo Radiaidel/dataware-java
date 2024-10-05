@@ -2,6 +2,8 @@ package com.dataware.model;
 
 import java.util.List;
 
+import java.util.List;
+
 public class Team {
 	private int id;
 	private String name;
