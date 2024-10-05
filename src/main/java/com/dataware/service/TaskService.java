@@ -1,5 +1,10 @@
 package com.dataware.service;
 
-public interface TaskService {
+import com.dataware.model.Task;
 
+
+public interface TaskService {
+	 public void addTask(Task task) throws Exception;
+	
+  
 }
