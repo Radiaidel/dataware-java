@@ -235,7 +235,7 @@ public class ProjectRepositoryImpl implements ProjectRepository{
 
 	        logger.info("Found {} projects matching the query '{}'.", projects.size(), query);
 	    } catch (SQLException e) {
-	        logger.error("Failed to search projects for query '{}': {}", query, e.getMessage());
+	        logger.error("Failed to search project for query '{}': {}", query, e.getMessage());
 	    }
 
 	    return projects; 
