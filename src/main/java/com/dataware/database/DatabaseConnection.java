@@ -14,24 +14,26 @@ public class DatabaseConnection {
     private Connection connection;
 
 
-    private DatabaseConnection() {
+    public DatabaseConnection() {
         Properties properties = new Properties();
         try (InputStream input = getClass().getClassLoader().getResourceAsStream("application.properties")) {
             if (input == null) {
-                throw new RuntimeException("Sorry, unable to find config.properties");
+                throw new RuntimeException("Sorry, unable to find application.properties");
             }
             properties.load(input);
             String URL = properties.getProperty("db.url");
             String USER = properties.getProperty("db.username");
             String PASSWORD = properties.getProperty("db.password");
 
+            System.out.println("Attempting database connection...");
             connection = DriverManager.getConnection(URL, USER, PASSWORD);
-            System.out.println("gooooooooooooooooood");
+            System.out.println("Database connection established");
         } catch (IOException | SQLException ex) {
             ex.printStackTrace();
             throw new RuntimeException("Failed to connect to the database");
         }
     }
+
 
 
     public static synchronized DatabaseConnection getInstance() {

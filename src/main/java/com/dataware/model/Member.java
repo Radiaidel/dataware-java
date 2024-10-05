@@ -1,18 +1,21 @@
 package com.dataware.model;
 
+import java.util.List;
+
 import com.dataware.model.enums.MemberRole;
 
 public class Member {
-
     private int id;
     private String firstName;
     private String lastName;
     private String email;
     private MemberRole role;
-
+    private List<Team> teams;
+    // Constructor
     public Member() {
+    	
     }
-
+    
     public Member(int id, String firstName, String lastName, String email, MemberRole role) {
         this.id = id;
         this.firstName = firstName;
@@ -22,7 +25,6 @@ public class Member {
     }
 
     // Getters and Setters
-
     public int getId() {
         return id;
     }
@@ -62,8 +64,19 @@ public class Member {
     public void setRole(MemberRole role) {
         this.role = role;
     }
+    public List<Team> getTeams() {
+        return teams;
+    }
 
-    @Override
+    public void setTeams(List<Team> teams) {
+        this.teams = teams;
+    }
+
+    public void addTeam(Team team) {
+        this.teams.add(team);
+    }
+
+ @Override
     public String toString() {
         return "Member{" +
                 "id=" + id +
