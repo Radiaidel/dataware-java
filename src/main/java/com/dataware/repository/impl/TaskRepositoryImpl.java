@@ -13,15 +13,17 @@ import com.dataware.database.DatabaseConnection;
 import com.dataware.model.Member;
 import com.dataware.model.Project;
 import com.dataware.model.Task;
-import com.dataware.model.enums.MemberRole;
-import com.dataware.model.enums.ProjectStatus;
 import com.dataware.model.enums.TaskPriority;
 import com.dataware.model.enums.TaskStatus;
 import com.dataware.repository.TaskRepository;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class TaskRepositoryImpl implements TaskRepository {
 
 	private Connection conn;
+	private static final Logger logger = LoggerFactory.getLogger(TaskRepositoryImpl.class);
 
 	public TaskRepositoryImpl() {
 		conn = DatabaseConnection.getInstance().getConnection();
@@ -46,10 +48,12 @@ public class TaskRepositoryImpl implements TaskRepository {
 			pstmt.setInt(7, task.getProject().getId());
 			pstmt.setInt(8, task.getMember().getId());
 
-			return pstmt.executeUpdate() > 0;
+			boolean result = pstmt.executeUpdate() > 0;
+			logger.info("Task added successfully: {}", task.getTitle());
 
+			return result;
 		} catch (SQLException e) {
-			e.printStackTrace();
+			logger.error("Error adding task: {}", task.getTitle(), e);
 		}
 		return false;
 	}
@@ -69,10 +73,12 @@ public class TaskRepositoryImpl implements TaskRepository {
 
 			pstmt.setInt(8, task.getId());
 
-			return pstmt.executeUpdate() > 0;
+			boolean result = pstmt.executeUpdate() > 0;
+			logger.info("Task updated successfully: {}", task.getTitle());
+			return result;
 
 		} catch (SQLException e) {
-			e.printStackTrace();
+			logger.error("Error updating task: {}", task.getTitle(), e);
 		}
 		return false;
 	}
@@ -82,9 +88,11 @@ public class TaskRepositoryImpl implements TaskRepository {
 		String query = "DELETE FROM `task` WHERE id =?";
 		try (PreparedStatement pstmt = conn.prepareStatement(query)) {
 			pstmt.setInt(1, id);
-			return pstmt.executeUpdate() > 0;
+			boolean result = pstmt.executeUpdate() > 0;
+			logger.info("Task deleted successfully: ID {}", id);
+			return result;
 		} catch (SQLException e) {
-			e.printStackTrace();
+			logger.error("Error deleting task with ID: {}", id, e);
 		}
 		return false;
 	}
@@ -133,10 +141,11 @@ public class TaskRepositoryImpl implements TaskRepository {
 				task.setMember(member);
 
 				tasks.add(task);
+				logger.info("Displayed {} tasks from page {}.", tasks.size(), pageNumber);
 			}
 
 		} catch (SQLException e) {
-			e.printStackTrace();
+			logger.error("Error displaying tasks: ", e);
 		}
 
 		return tasks.isEmpty() ? Optional.empty() : Optional.of(tasks);
@@ -147,10 +156,12 @@ public class TaskRepositoryImpl implements TaskRepository {
 
 		try (PreparedStatement pstmt = conn.prepareStatement(query); ResultSet rs = pstmt.executeQuery()) {
 			if (rs.next()) {
-				return rs.getInt(1);
+				int count = rs.getInt(1);
+				logger.info("Total tasks: {}", count);
+				return count;
 			}
 		} catch (SQLException e) {
-			e.printStackTrace();
+			logger.error("Error counting total tasks: ", e);
 		}
 		return 0;
 	}
