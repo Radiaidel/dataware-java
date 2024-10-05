@@ -21,8 +21,16 @@ public class MemberRepositoryImpl implements MemberRepository {
     public MemberRepositoryImpl() {
         this.connection = DatabaseConnection.getInstance().getConnection();
     }
+    
+    
 
-    @Override
+    public MemberRepositoryImpl(Connection connection) {
+		this.connection = connection;
+	}
+
+
+
+	@Override
     public void addMember(Member member) {
         String sql = "INSERT INTO Member (first_name, last_name, email, role) VALUES (?, ?, ?, ?)";
         try (PreparedStatement statement = connection.prepareStatement(sql)) {

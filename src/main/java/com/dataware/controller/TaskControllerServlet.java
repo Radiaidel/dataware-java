@@ -29,13 +29,17 @@ public class TaskControllerServlet extends HttpServlet {
 		super();
 
 	}
-
-	public void init() {
-
-		taskServiceImpl = new TaskServiceImpl();
+	public void setTaskServiceImpl(TaskServiceImpl taskServiceImpl) {
+	    this.taskServiceImpl = taskServiceImpl;
+	}
+	
+	@Override
+	public void init() throws ServletException {
+	    super.init();
+	    taskServiceImpl = new TaskServiceImpl();
 	}
 
-	protected void doGet(HttpServletRequest request, HttpServletResponse response)
+	public void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		String projectIdParam = request.getParameter("id");
 		String pageParam = request.getParameter("page");
@@ -65,7 +69,7 @@ public class TaskControllerServlet extends HttpServlet {
 	}
 
 	@Override
-	protected void doPost(HttpServletRequest request, HttpServletResponse response)
+	public void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		String action = request.getParameter("action");
 
