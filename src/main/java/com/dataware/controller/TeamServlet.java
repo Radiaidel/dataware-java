@@ -37,6 +37,14 @@ public class TeamServlet extends HttpServlet {
         super();
     }
 
+ // New constructor for dependency injection in tests
+    public TeamServlet(TeamService teamService, MemberService memberService, MemberTeamService memberTeamService) {
+        this.teamService = teamService;
+        this.memberService = memberService;
+        this.memberTeamService = memberTeamService;
+    }
+
+    
     @Override
     public void init() throws ServletException {
         // Injecting the TeamRepositoryImpl into TeamServiceImpl
@@ -46,7 +54,7 @@ public class TeamServlet extends HttpServlet {
         logger.info("TeamServlet initialized with TeamService, MemberService, and MemberTeamService.");
     }
 
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String action = request.getParameter("action");
 
         if (action == null) {
@@ -168,7 +176,7 @@ public class TeamServlet extends HttpServlet {
     }
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String action = request.getParameter("action");
         logger.info("Received POST request with action: {}", action); // Log received POST action
         switch (action) {

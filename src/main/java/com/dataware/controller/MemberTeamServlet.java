@@ -33,6 +33,13 @@ public class MemberTeamServlet extends HttpServlet {
         super();
     }
 
+    // New constructor for dependency injection in tests
+    public MemberTeamServlet(TeamService teamService, MemberService memberService, MemberTeamService memberTeamService) {
+        this.teamService = teamService;
+        this.memberService = memberService;
+        this.memberTeamService = memberTeamService;
+    }
+
     @Override
     public void init() throws ServletException {
         // Injecting dependencies
@@ -43,7 +50,7 @@ public class MemberTeamServlet extends HttpServlet {
     }
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String action = request.getParameter("action");
         String memberIdParam = request.getParameter("memberId");
         String teamIdParam = request.getParameter("teamId");
