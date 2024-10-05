@@ -95,12 +95,16 @@ Possibilité de glisser-déposer les tâches pour changer leur statut.
 Ajout d'une API REST pour permettre l'intégration avec d'autres outils.
 Gestion avancée des rôles et des permissions pour les membres de l'équipe.
 
-##Auteurs et contact
+## Auteurs et contact
+
 Nom: [Idelkadi Radia]
 GitHub: https://github.com/Radiaidel
+
 -----------------------------------
+
 Nom: [Talemsi Abdellah]
 GitHub: https://github.com/ATalemsi
+
 -----------------------------------
 Nom: [Sebti Douae]
 GitHub: https://github.com/Douaesb
