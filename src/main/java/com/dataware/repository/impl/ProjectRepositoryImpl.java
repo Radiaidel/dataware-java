@@ -16,12 +16,17 @@ import java.util.List;
 
 public class ProjectRepositoryImpl implements ProjectRepository{
 
+    private final Connection connection;
+
+    
+	public ProjectRepositoryImpl(){
+        this.connection = DatabaseConnection.getInstance().getConnection();
+	}
 	@Override
 	public void createProject(Project project) {
 		String sql = "INSERT INTO project (name, description, start_date, end_date, status) VALUES (?, ?, ?, ?, ?)";
          
-		try (Connection connection = DatabaseConnection.getInstance().getConnection();
-	             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+		try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
 	             
 	            preparedStatement.setString(1, project.getName());
 	            preparedStatement.setString(2, project.getDescription());
@@ -48,8 +53,7 @@ public class ProjectRepositoryImpl implements ProjectRepository{
 	    Project project = null;
 	    List<Team> teams = new ArrayList<>();
 
-	    try (Connection connection = DatabaseConnection.getInstance().getConnection();
-	         PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+	    try ( PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
 
 	        preparedStatement.setInt(1, id);
 	        ResultSet resultSet = preparedStatement.executeQuery();
@@ -90,8 +94,7 @@ public class ProjectRepositoryImpl implements ProjectRepository{
 	    List<Project> projects = new ArrayList<>();
 	    String sql = "SELECT * FROM project LIMIT ? OFFSET ?"; // SQL for pagination
 
-	    try (Connection connection = DatabaseConnection.getInstance().getConnection();
-	         PreparedStatement stmt = connection.prepareStatement(sql)) {
+	    try (PreparedStatement stmt = connection.prepareStatement(sql)) {
 	        stmt.setInt(1, size); // Set the page size (number of items per page)
 	        stmt.setInt(2, (page - 1) * size); // Set the offset for pagination
 
@@ -117,8 +120,7 @@ public class ProjectRepositoryImpl implements ProjectRepository{
 	public void updateProject(Project project) {
 		String sql = "UPDATE project SET name = ?, description = ?, start_date = ?, end_date = ?, status = ? WHERE id = ?";
 
-        try (Connection connection = DatabaseConnection.getInstance().getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
              
             preparedStatement.setString(1, project.getName());
             preparedStatement.setString(2, project.getDescription());
@@ -139,8 +141,7 @@ public class ProjectRepositoryImpl implements ProjectRepository{
 	public void deleteProject(int id) {
 		String sql = "DELETE FROM project WHERE id = ?";
 
-        try (Connection connection = DatabaseConnection.getInstance().getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
              
             preparedStatement.setInt(1, id);
             preparedStatement.executeUpdate();
@@ -155,8 +156,7 @@ public class ProjectRepositoryImpl implements ProjectRepository{
 	    List<Project> projects = new ArrayList<>();
 	    String sql = "SELECT * FROM project WHERE name LIKE ? OR description LIKE ?";
 
-	    try (Connection connection = DatabaseConnection.getInstance().getConnection();
-	         PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+	    try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
 
 	        String searchQuery = "%" + query + "%"; 
 	        preparedStatement.setString(1, searchQuery);
@@ -191,8 +191,7 @@ public class ProjectRepositoryImpl implements ProjectRepository{
 		 int count = 0;
 	        String sql = "SELECT COUNT(*) FROM project"; // Adjust table name if needed
 
-	        try (Connection connection = DatabaseConnection.getInstance().getConnection();
-	             PreparedStatement preparedStatement = connection.prepareStatement(sql);
+	        try (PreparedStatement preparedStatement = connection.prepareStatement(sql);
 	             ResultSet resultSet = preparedStatement.executeQuery()) {
 
 	            if (resultSet.next()) {

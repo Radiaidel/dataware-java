@@ -40,12 +40,13 @@
         <url-pattern>/tasks</url-pattern>
     </servlet-mapping>
     
-    
-           <servlet-name>ProjectServlet</servlet-name>
+ <servlet>
+        <servlet-name>ProjectServlet</servlet-name>
         <servlet-class>com.dataware.controller.ProjectServlet</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>ProjectServlet</servlet-name>
         <url-pattern>/projects</url-pattern>
     </servlet-mapping>
+    
 </web-app>
