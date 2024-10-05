@@ -11,9 +11,12 @@ import java.util.Optional;
 import com.dataware.database.DatabaseConnection;
 import com.dataware.model.Team;
 import com.dataware.repository.TeamRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TeamRepositoryImpl implements TeamRepository {
 
+    private static final Logger logger = LoggerFactory.getLogger(TeamRepositoryImpl.class);  // Logger declaration
 
     private final Connection connection;
 
@@ -27,8 +30,9 @@ public class TeamRepositoryImpl implements TeamRepository {
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setString(1, team.getName());
             stmt.executeUpdate();
+            logger.info("Team added successfully: {}", team.getName());  // Log success message
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error("Error adding team: {}", team.getName(), e);  // Log error message
         }
     }
     
@@ -40,11 +44,13 @@ public class TeamRepositoryImpl implements TeamRepository {
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
                 Team team = new Team(rs.getInt("id"), rs.getString("name"));
+                logger.info("Team found with id: {}", id);  // Log success message
                 return Optional.of(team);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error("Error fetching team by id: {}", id, e);  // Log error message
         }
+        logger.warn("Team not found with id: {}", id);  // Log warning if team not found
         return Optional.empty();
     }
     
@@ -59,8 +65,9 @@ public class TeamRepositoryImpl implements TeamRepository {
             while (rs.next()) {
                 teams.add(new Team(rs.getInt("id"), rs.getString("name")));
             }
+            logger.info("Fetched {} teams for page {}", teams.size(), page);  // Log success message
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error("Error fetching teams for page: {}", page, e);  // Log error message
         }
         return teams;
     }
@@ -72,8 +79,9 @@ public class TeamRepositoryImpl implements TeamRepository {
             stmt.setString(1, team.getName());
             stmt.setInt(2, team.getId());
             stmt.executeUpdate();
+            logger.info("Team updated successfully: {}", team.getName());  // Log success message
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error("Error updating team: {}", team.getName(), e);  // Log error message
         }
     }
     
@@ -83,8 +91,9 @@ public class TeamRepositoryImpl implements TeamRepository {
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setInt(1, id);
             stmt.executeUpdate();
+            logger.info("Team deleted successfully with id: {}", id);  // Log success message
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error("Error deleting team with id: {}", id, e);  // Log error message
         }
     }
 
@@ -98,8 +107,9 @@ public class TeamRepositoryImpl implements TeamRepository {
             while (rs.next()) {
                 teams.add(new Team(rs.getInt("id"), rs.getString("name")));
             }
+            logger.info("Found {} teams with name containing '{}'", teams.size(), name);  // Log success message
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error("Error searching teams by name: {}", name, e);  // Log error message
         }
         return teams;
     }
@@ -107,21 +117,15 @@ public class TeamRepositoryImpl implements TeamRepository {
     public int getTotalTeams() {
         int totalTeams = 0;
         String sql = "SELECT COUNT(*) FROM team";
-
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql);
-             
              ResultSet resultSet = preparedStatement.executeQuery()) {
-
             if (resultSet.next()) {
                 totalTeams = resultSet.getInt(1);  
             }
+            logger.info("Total number of teams: {}", totalTeams);  // Log success message
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error("Error fetching total number of teams", e);  // Log error message
         }
-
         return totalTeams;
     }
-
-    
-
 }

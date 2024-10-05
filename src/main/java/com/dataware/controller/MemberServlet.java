@@ -9,6 +9,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.slf4j.Logger; // Import SLF4J Logger
+import org.slf4j.LoggerFactory; // Import LoggerFactory
+
 import com.dataware.model.Member;
 import com.dataware.model.enums.MemberRole;
 import com.dataware.repository.impl.MemberRepositoryImpl;
@@ -17,24 +20,33 @@ import com.dataware.service.impl.MemberServiceImpl;
 
 public class MemberServlet extends HttpServlet {
     
+    private static final Logger logger = LoggerFactory.getLogger(MemberServlet.class); // Create logger instance
     private MemberService memberService;
 
     public MemberServlet() {
         super();
     }
     
+ // New constructor for dependency injection in tests
+    public MemberServlet(MemberService memberService) {
+        this.memberService = memberService;
+    }
+    
+    
     @Override
     public void init() throws ServletException {
-        // Injecting the MemberRepositoryImpl into MemberServiceImpl
         memberService = new MemberServiceImpl(new MemberRepositoryImpl());
+        logger.info("MemberService initialized."); 
     }
 
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String action = request.getParameter("action");
 
         if (action == null) {
             action = "list";
         }
+
+        logger.info("Action requested: {}", action); 
 
         switch (action) {
             case "list":
@@ -75,6 +87,9 @@ public class MemberServlet extends HttpServlet {
         request.setAttribute("nextPage", page < lastPage ? page + 1 : lastPage);
         request.setAttribute("lastPage", lastPage);
 
+        // Log the number of members retrieved
+        logger.info("Retrieved {} members for page {}.", members.size(), page);
+
         // Forward to the JSP page
         request.getRequestDispatcher("/members/memberList.jsp").forward(request, response);
     }
@@ -85,8 +100,10 @@ public class MemberServlet extends HttpServlet {
         Optional<Member> memberOpt = memberService.getMemberById(memberId);
         if (memberOpt.isPresent()) {
             request.setAttribute("member", memberOpt.get());
+            logger.info("Viewing member with ID: {}", memberId); // Log when viewing a member
             request.getRequestDispatcher("/members/memberView.jsp").forward(request, response);
         } else {
+            logger.error("Member not found: ID {}", memberId); // Log error if member not found
             response.sendError(HttpServletResponse.SC_NOT_FOUND, "Member not found");
         }
     }
@@ -94,6 +111,7 @@ public class MemberServlet extends HttpServlet {
     private void searchMembers(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String email = request.getParameter("email");
         if (email == null || email.trim().isEmpty()) {
+            logger.warn("Invalid email search attempt."); // Log warning for invalid email
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid email");
             return;
         }
@@ -101,15 +119,17 @@ public class MemberServlet extends HttpServlet {
         List<Member> members = memberService.searchMembersByEmail(email);
         if (members.isEmpty()) {
             request.setAttribute("message", "No members found with the email: " + email);
+            logger.info("No members found with the email: {}", email); // Log if no members found
         } else {
             request.setAttribute("members", members);
+            logger.info("Found {} members with the email: {}", members.size(), email); // Log number of members found
         }
 
         request.getRequestDispatcher("/members/memberList.jsp").forward(request, response);
     }
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String action = request.getParameter("action");
         switch (action) {
             case "create":
@@ -140,7 +160,7 @@ public class MemberServlet extends HttpServlet {
         newMember.setRole(role);
 
         memberService.addMember(newMember);
-        System.out.println(newMember);
+        logger.info("New member created: {}", newMember); // Log new member creation
         response.sendRedirect("member?action=list");
     }
     
@@ -159,12 +179,14 @@ public class MemberServlet extends HttpServlet {
         member.setRole(MemberRole.valueOf(role));
 
         memberService.updateMember(member);
+        logger.info("Member updated: ID {}", id); // Log member update
         response.sendRedirect("member?action=list");
     }
 
     private void deleteMember(HttpServletRequest request, HttpServletResponse response) throws IOException {
         int id = Integer.parseInt(request.getParameter("id"));
         memberService.deleteMember(id);
+        logger.info("Member deleted: ID {}", id); // Log member deletion
         response.sendRedirect("member?action=list");
     }
 }
