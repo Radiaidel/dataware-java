@@ -19,22 +19,27 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Optional;
 
+import org.slf4j.Logger; // Import SLF4J Logger
+import org.slf4j.LoggerFactory; // Import LoggerFactory
+
 public class MemberTeamServlet extends HttpServlet {
     
-    private  MemberTeamService memberTeamService;
-    private  MemberService memberService;
-    private  TeamService teamService;
-    
+    private static final Logger logger = LoggerFactory.getLogger(MemberTeamServlet.class); // Create logger instance
+    private MemberTeamService memberTeamService;
+    private MemberService memberService;
+    private TeamService teamService;
+
     public MemberTeamServlet() {
-    	super();
-    	// TODO Auto-generated constructor stub
+        super();
     }
 
+    @Override
     public void init() throws ServletException {
         // Injecting dependencies
-    	teamService = new TeamServiceImpl(new TeamRepositoryImpl());
+        teamService = new TeamServiceImpl(new TeamRepositoryImpl());
         memberService = new MemberServiceImpl(new MemberRepositoryImpl());
         memberTeamService = new MemberTeamServiceImpl(new MemberTeamRepositoryImpl());
+        logger.info("Services initialized."); // Log message on initialization
     }
 
     @Override
@@ -44,6 +49,7 @@ public class MemberTeamServlet extends HttpServlet {
         String teamIdParam = request.getParameter("teamId");
 
         if (memberIdParam == null || teamIdParam == null) {
+            logger.warn("Missing member or team ID."); // Log warning for missing IDs
             response.getWriter().write("Missing member or team ID.");
             return;
         }
@@ -56,6 +62,7 @@ public class MemberTeamServlet extends HttpServlet {
         Optional<Team> teamOpt = teamService.getTeamById(teamId);
 
         if (!memberOpt.isPresent() || !teamOpt.isPresent()) {
+            logger.error("Member or Team not found. Member ID: {}, Team ID: {}", memberId, teamId); // Log error if not found
             response.getWriter().write("Member or Team not found.");
             return;
         }
@@ -66,18 +73,23 @@ public class MemberTeamServlet extends HttpServlet {
         if ("add".equals(action)) {
             boolean added = memberTeamService.addMemberToTeam(member, team);
             if (added) {
+                logger.info("Member {} added to Team {}.", memberId, teamId); // Log successful addition
                 response.sendRedirect(request.getContextPath() + "/teams/team?action=view&id=" + teamId);
             } else {
+                logger.error("Failed to add member {} to team {}.", memberId, teamId); // Log failure to add
                 response.getWriter().write("Failed to add member to team.");
             }
         } else if ("remove".equals(action)) {
             boolean removed = memberTeamService.removeMemberFromTeam(member, team);
             if (removed) {
+                logger.info("Member {} removed from Team {}.", memberId, teamId); // Log successful removal
                 response.sendRedirect(request.getContextPath() + "/teams/team?action=view&id=" + teamId);
             } else {
+                logger.error("Failed to remove member {} from team {}.", memberId, teamId); // Log failure to remove
                 response.getWriter().write("Failed to remove member from team.");
             }
         } else {
+            logger.warn("Invalid action received: {}", action); // Log warning for invalid action
             response.getWriter().write("Invalid action.");
         }
     }

@@ -21,192 +21,202 @@ import com.dataware.service.impl.MemberServiceImpl;
 import com.dataware.service.impl.MemberTeamServiceImpl;
 import com.dataware.service.impl.TeamServiceImpl;
 
-
-
+// Import the SLF4J Logger and LoggerFactory classes
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TeamServlet extends HttpServlet {
-	
-	 private TeamService teamService;
-	 private MemberService memberService;
-	 private MemberTeamService memberTeamService;
 
-	 public TeamServlet() {
-		 super();
-		 // TODO Auto-generated constructor stub
-	 }
-	 
-	 
-	  @Override
-	    public void init() throws ServletException {
-	        // Injecting the TeamRepositoryImpl into TeamServiceImpl
-	        teamService = new TeamServiceImpl(new TeamRepositoryImpl());
-	        memberService = new MemberServiceImpl(new MemberRepositoryImpl()); // Initialize MemberService
-	        memberService = new MemberServiceImpl(new MemberRepositoryImpl()); 
-	        memberTeamService = new MemberTeamServiceImpl(new MemberTeamRepositoryImpl()); 
+    private static final Logger logger = LoggerFactory.getLogger(TeamServlet.class); // Create a logger instance
 
-	    }
-    
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    private TeamService teamService;
+    private MemberService memberService;
+    private MemberTeamService memberTeamService;
 
-			String action = request.getParameter("action");
-			
-			if(action == null) {
-				
-				action = "list";
+    public TeamServlet() {
+        super();
+    }
 
-			}
-			
-			switch(action) {
-			
-			case "list" :
-				listTeams(request, response);
-				break;
-			case "view" : 
-				viewTeam(request, response);
-				break;
-			 case "search":
-	                searchTeams(request, response);
-	                break;
-			default :
+    @Override
+    public void init() throws ServletException {
+        // Injecting the TeamRepositoryImpl into TeamServiceImpl
+        teamService = new TeamServiceImpl(new TeamRepositoryImpl());
+        memberService = new MemberServiceImpl(new MemberRepositoryImpl());
+        memberTeamService = new MemberTeamServiceImpl(new MemberTeamRepositoryImpl());
+        logger.info("TeamServlet initialized with TeamService, MemberService, and MemberTeamService.");
+    }
+
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String action = request.getParameter("action");
+
+        if (action == null) {
+            action = "list";
+        }
+
+        logger.info("Received request with action: {}", action); // Log the received action
+
+        switch (action) {
+            case "list":
+                listTeams(request, response);
+                break;
+            case "view":
+                viewTeam(request, response);
+                break;
+            case "search":
+                searchTeams(request, response);
+                break;
+            default:
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
-				
-			}
-		response.getWriter().append("Served at: ").append(request.getContextPath());
-	}
-	
-	private void listTeams(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-	    // Pagination values
-	    int page = 1;          // Default page
-	    int pageSize = 3;      // Number of items per page
+                logger.error("Unknown action requested: {}", action); // Log unknown action
+        }
+        response.getWriter().append("Served at: ").append(request.getContextPath());
+    }
 
-	    // Get the current page number from the request
-	    if (request.getParameter("page") != null) {
-	        page = Integer.parseInt(request.getParameter("page"));
-	    }
+    private void listTeams(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        // Pagination values
+        int page = 1; // Default page
+        int pageSize = 3; // Number of items per page
 
-	    // Get total number of teams to calculate the last page
-	    int totalTeams = teamService.getTeamCount();
-	    int lastPage = (int) Math.ceil((double) totalTeams / pageSize);
+        // Get the current page number from the request
+        if (request.getParameter("page") != null) {
+            page = Integer.parseInt(request.getParameter("page"));
+        }
 
-	    // Get the list of teams for the current page
-	    List<Team> teams = teamService.getAllTeams(page, pageSize);
+        // Get total number of teams to calculate the last page
+        int totalTeams = teamService.getTeamCount();
+        int lastPage = (int) Math.ceil((double) totalTeams / pageSize);
 
-	    // Set attributes for the pagination controls
-	    request.setAttribute("teams", teams);
-	    request.setAttribute("currentPage", page);
-	    request.setAttribute("previousPage", page > 1 ? page - 1 : 1);
-	    request.setAttribute("nextPage", page < lastPage ? page + 1 : lastPage);
-	    request.setAttribute("lastPage", lastPage);
+        // Get the list of teams for the current page
+        List<Team> teams = teamService.getAllTeams(page, pageSize);
 
-	    // Forward to the JSP page
-	    request.getRequestDispatcher("/teams/teamList.jsp").forward(request, response);
-	}
+        // Set attributes for the pagination controls
+        request.setAttribute("teams", teams);
+        request.setAttribute("currentPage", page);
+        request.setAttribute("previousPage", page > 1 ? page - 1 : 1);
+        request.setAttribute("nextPage", page < lastPage ? page + 1 : lastPage);
+        request.setAttribute("lastPage", lastPage);
 
-	  private void viewTeam(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-	        int teamId = Integer.parseInt(request.getParameter("id"));
-	        Optional<Team> teamOpt = teamService.getTeamById(teamId);
+        logger.info("Listing teams: currentPage = {}, totalTeams = {}, lastPage = {}", page, totalTeams, lastPage); // Log pagination info
 
-	        if (teamOpt.isPresent()) {
-	            Team team = teamOpt.get();
-	            request.setAttribute("team", team);
+        // Forward to the JSP page
+        request.getRequestDispatcher("/teams/teamList.jsp").forward(request, response);
+    }
 
-	            // Pagination for members
-	            int page = 1; // Default page
-	            int pageSize = 3; // Number of members per page
+    private void viewTeam(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        int teamId = Integer.parseInt(request.getParameter("id"));
+        Optional<Team> teamOpt = teamService.getTeamById(teamId);
 
-	            // Get the current page number from the request
-	            if (request.getParameter("page") != null) {
-	                page = Integer.parseInt(request.getParameter("page"));
-	            }
+        if (teamOpt.isPresent()) {
+            Team team = teamOpt.get();
+            request.setAttribute("team", team);
 
-	            // Get total number of members to calculate the last page
-	            int totalMembers = memberService.getTotalMembers(); // Implement getMemberCount in MemberService
-	            int lastPage = (int) Math.ceil((double) totalMembers / pageSize);
+            // Pagination for members
+            int page = 1; // Default page
+            int pageSize = 3; // Number of members per page
 
-	            // Get the list of members for the current page
-	            List<Member> availableMembers = memberService.getAllMembers(page, pageSize); // Implement getAllMembers in MemberService
-	            List<Member> allMembers = memberService.getAllMembers(); // Implement getAllMembers in MemberService
-	            List<Member> membersoftheTeam = memberTeamService.getMembersOfTeam(team, page, pageSize);
+            // Get the current page number from the request
+            if (request.getParameter("page") != null) {
+                page = Integer.parseInt(request.getParameter("page"));
+            }
 
-	            // Set attributes for pagination controls
-	            request.setAttribute("allMembers", allMembers);
-	            request.setAttribute("membersoftheTeam", membersoftheTeam);
-	            request.setAttribute("availableMembers", availableMembers);
-	            request.setAttribute("currentPage", page);
-	            request.setAttribute("previousPage", page > 1 ? page - 1 : 1);
-	            request.setAttribute("nextPage", page < lastPage ? page + 1 : lastPage);
-	            request.setAttribute("lastPage", lastPage);
+            // Get total number of members to calculate the last page
+            int totalMembers = memberService.getTotalMembers();
+            int lastPage = (int) Math.ceil((double) totalMembers / pageSize);
 
-	            // Forward to the JSP page
-	            request.getRequestDispatcher("/teams/teamView.jsp").forward(request, response);
-	        } else {
-	            response.sendError(HttpServletResponse.SC_NOT_FOUND, "Team not found");
-	        }
-	    }
-	   
-	   private void searchTeams(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-	        String name = request.getParameter("name");
-	        if (name == null || name.trim().isEmpty()) {
-	            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid team name");
-	            return;
-	        }
+            // Get the list of members for the current page
+            List<Member> availableMembers = memberService.getAllMembers(page, pageSize);
+            List<Member> allMembers = memberService.getAllMembers();
+            List<Member> membersoftheTeam = memberTeamService.getMembersOfTeam(team, page, pageSize);
 
-	        List<Team> teams = teamService.searchTeamsByName(name);
-	        if (teams.isEmpty()) {
-	            request.setAttribute("message", "No teams found with the name: " + name);
-	        } else {
-	            request.setAttribute("teams", teams);
-	        }
+            // Set attributes for pagination controls
+            request.setAttribute("allMembers", allMembers);
+            request.setAttribute("membersoftheTeam", membersoftheTeam);
+            request.setAttribute("availableMembers", availableMembers);
+            request.setAttribute("currentPage", page);
+            request.setAttribute("previousPage", page > 1 ? page - 1 : 1);
+            request.setAttribute("nextPage", page < lastPage ? page + 1 : lastPage);
+            request.setAttribute("lastPage", lastPage);
 
-	        request.getRequestDispatcher("/teams/teamList.jsp").forward(request, response);
-	    }
-	
+            logger.info("Viewing team: id = {}, currentPage = {}, totalMembers = {}", teamId, page, totalMembers); // Log team viewing info
 
-	   @Override
-	    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-	        String action = request.getParameter("action");
-	        switch (action) {
-	            case "create":
-	                createTeam(request, response);
-	                break;
-	            case "update":
-	                updateTeam(request, response);
-	                break;
-	            case "delete":
-	                deleteTeam(request, response);
-	                break;
-	            default:
-	                response.sendError(HttpServletResponse.SC_NOT_FOUND);
-	        }
-	    }
-	   
-	    private void createTeam(HttpServletRequest request, HttpServletResponse response) throws IOException {
-	        String name = request.getParameter("name");
+            // Forward to the JSP page
+            request.getRequestDispatcher("/teams/teamView.jsp").forward(request, response);
+        } else {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND, "Team not found");
+            logger.error("Team not found: id = {}", teamId); // Log error for team not found
+        }
+    }
 
-	        Team newTeam = new Team();
-	        newTeam.setName(name);
-	        teamService.addTeam(newTeam);
+    private void searchTeams(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String name = request.getParameter("name");
+        if (name == null || name.trim().isEmpty()) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid team name");
+            logger.warn("Invalid team name search request."); // Log invalid search request
+            return;
+        }
 
-	        response.sendRedirect("team?action=list");
-	    }
-	    
-	    private void updateTeam(HttpServletRequest request, HttpServletResponse response) throws IOException {
-	        int id = Integer.parseInt(request.getParameter("id"));
-	        String name = request.getParameter("name");
+        List<Team> teams = teamService.searchTeamsByName(name);
+        if (teams.isEmpty()) {
+            request.setAttribute("message", "No teams found with the name: " + name);
+            logger.info("No teams found with the name: {}", name); // Log search result
+        } else {
+            request.setAttribute("teams", teams);
+            logger.info("Found {} teams with the name: {}", teams.size(), name); // Log found teams
+        }
 
-	        Team team = new Team();
-	        team.setId(id);
-	        team.setName(name);
+        request.getRequestDispatcher("/teams/teamList.jsp").forward(request, response);
+    }
 
-	        teamService.updateTeam(team);
-	        response.sendRedirect("team?action=list");
-	    }
-	    
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String action = request.getParameter("action");
+        logger.info("Received POST request with action: {}", action); // Log received POST action
+        switch (action) {
+            case "create":
+                createTeam(request, response);
+                break;
+            case "update":
+                updateTeam(request, response);
+                break;
+            case "delete":
+                deleteTeam(request, response);
+                break;
+            default:
+                response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                logger.error("Unknown action in POST request: {}", action); // Log unknown POST action
+        }
+    }
 
-	    private void deleteTeam(HttpServletRequest request, HttpServletResponse response) throws IOException {
-	        int id = Integer.parseInt(request.getParameter("id"));
-	        teamService.deleteTeamById(id);
-	        response.sendRedirect("team?action=list");
-	    }
-	    
+    private void createTeam(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String name = request.getParameter("name");
+
+        Team newTeam = new Team();
+        newTeam.setName(name);
+        teamService.addTeam(newTeam);
+        
+        logger.info("Team created: {}", name); // Log team creation
+
+        response.sendRedirect("team?action=list");
+    }
+
+    private void updateTeam(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        int id = Integer.parseInt(request.getParameter("id"));
+        String name = request.getParameter("name");
+
+        Team team = new Team();
+        team.setId(id);
+        team.setName(name);
+
+        teamService.updateTeam(team);
+        logger.info("Team updated: id = {}, name = {}", id, name); // Log team update
+        response.sendRedirect("team?action=list");
+    }
+
+    private void deleteTeam(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        int id = Integer.parseInt(request.getParameter("id"));
+        teamService.deleteTeamById(id);
+        
+        logger.info("Team deleted: id = {}", id); // Log team deletion
+        response.sendRedirect("team?action=list");
+    }
 }

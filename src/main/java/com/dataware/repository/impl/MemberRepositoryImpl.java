@@ -4,6 +4,8 @@ import com.dataware.database.DatabaseConnection;
 import com.dataware.model.Member;
 import com.dataware.model.enums.MemberRole;
 import com.dataware.repository.MemberRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -11,6 +13,8 @@ import java.util.List;
 import java.util.Optional;
 
 public class MemberRepositoryImpl implements MemberRepository {
+
+    private static final Logger logger = LoggerFactory.getLogger(MemberRepositoryImpl.class);  // Logger declaration
 
     private final Connection connection;
 
@@ -27,8 +31,9 @@ public class MemberRepositoryImpl implements MemberRepository {
             statement.setString(3, member.getEmail());
             statement.setString(4, member.getRole().toString());
             statement.executeUpdate();
+            logger.info("Member added successfully: {}", member.getEmail());  // Log success message
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error("Error adding member: {}", member.getEmail(), e);  // Log error message
         }
     }
 
@@ -39,8 +44,8 @@ public class MemberRepositoryImpl implements MemberRepository {
             statement.setInt(1, id);
             ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
-            	 String roleStr = resultSet.getString("role"); 
-                 MemberRole role = MemberRole.fromString(roleStr);
+                String roleStr = resultSet.getString("role");
+                MemberRole role = MemberRole.fromString(roleStr);
 
                 Member member = new Member(
                         resultSet.getInt("id"),
@@ -49,11 +54,13 @@ public class MemberRepositoryImpl implements MemberRepository {
                         resultSet.getString("email"),
                         role
                 );
+                logger.info("Member found with id: {}", id);  // Log success message
                 return Optional.of(member);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error("Error fetching member by id: {}", id, e);  // Log error message
         }
+        logger.warn("Member not found with id: {}", id);  // Log warning if member not found
         return Optional.empty();
     }
 
@@ -66,7 +73,7 @@ public class MemberRepositoryImpl implements MemberRepository {
             statement.setInt(2, (page - 1) * pageSize);
             ResultSet resultSet = statement.executeQuery();
             while (resultSet.next()) {
-                String roleStr = resultSet.getString("role"); 
+                String roleStr = resultSet.getString("role");
                 MemberRole role = MemberRole.fromString(roleStr);
 
                 Member member = new Member(
@@ -78,13 +85,13 @@ public class MemberRepositoryImpl implements MemberRepository {
                 );
                 members.add(member);
             }
+            logger.info("Fetched {} members for page {}", members.size(), page);  // Log success message
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error("Error fetching members for page: {}", page, e);  // Log error message
         }
         return members;
     }
-    
-    
+
     @Override
     public List<Member> getAllMembers() {
         List<Member> members = new ArrayList<>();
@@ -92,7 +99,7 @@ public class MemberRepositoryImpl implements MemberRepository {
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             ResultSet resultSet = statement.executeQuery();
             while (resultSet.next()) {
-                String roleStr = resultSet.getString("role"); 
+                String roleStr = resultSet.getString("role");
                 MemberRole role = MemberRole.fromString(roleStr);
 
                 Member member = new Member(
@@ -104,8 +111,9 @@ public class MemberRepositoryImpl implements MemberRepository {
                 );
                 members.add(member);
             }
+            logger.info("Fetched {} members", members.size());  // Log success message
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error("Error fetching all members", e);  // Log error message
         }
         return members;
     }
@@ -120,8 +128,9 @@ public class MemberRepositoryImpl implements MemberRepository {
             statement.setString(4, member.getRole().toString());
             statement.setInt(5, member.getId());
             statement.executeUpdate();
+            logger.info("Member updated successfully: {}", member.getEmail());  // Log success message
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error("Error updating member: {}", member.getEmail(), e);  // Log error message
         }
     }
 
@@ -131,8 +140,9 @@ public class MemberRepositoryImpl implements MemberRepository {
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setInt(1, id);
             statement.executeUpdate();
+            logger.info("Member deleted successfully with id: {}", id);  // Log success message
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error("Error deleting member with id: {}", id, e);  // Log error message
         }
     }
 
@@ -142,14 +152,16 @@ public class MemberRepositoryImpl implements MemberRepository {
         try (Statement statement = connection.createStatement()) {
             ResultSet resultSet = statement.executeQuery(sql);
             if (resultSet.next()) {
-                return resultSet.getInt(1);
+                int totalMembers = resultSet.getInt(1);
+                logger.info("Total number of members: {}", totalMembers);  // Log success message
+                return totalMembers;
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error("Error fetching total number of members", e);  // Log error message
         }
         return 0;
     }
-    
+
     @Override
     public List<Member> findByEmail(String email) {
         List<Member> members = new ArrayList<>();
@@ -158,8 +170,8 @@ public class MemberRepositoryImpl implements MemberRepository {
             statement.setString(1, email);
             ResultSet resultSet = statement.executeQuery();
             while (resultSet.next()) {
-            	 String roleStr = resultSet.getString("role"); 
-                 MemberRole role = MemberRole.fromString(roleStr);
+                String roleStr = resultSet.getString("role");
+                MemberRole role = MemberRole.fromString(roleStr);
                 Member member = new Member(
                         resultSet.getInt("id"),
                         resultSet.getString("first_name"),
@@ -169,10 +181,10 @@ public class MemberRepositoryImpl implements MemberRepository {
                 );
                 members.add(member);
             }
+            logger.info("Found {} members with email '{}'", members.size(), email);  // Log success message
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error("Error searching members by email: {}", email, e);  // Log error message
         }
         return members;
     }
-
 }
