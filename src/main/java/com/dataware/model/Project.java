@@ -22,6 +22,9 @@ public class Project {
 
 	public Project() {
 	}
+	public Project(String string, String string2) {
+		
+	}
 
 	public int getId() {
 		return id;

@@ -1,7 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
 
-
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <%@ page import="java.util.List"%>
 <%@ page import="com.dataware.model.Task"%>
@@ -39,33 +39,100 @@
 
 
 	<div class="container mt-5">
+		<!-- Add Team Modal -->
+		<!-- Add Team Modal -->
+
+
 		<!-- Teams Section -->
 		<div class="card shadow-lg mt-4">
 			<div class="card-header bg-secondary text-white">
 				<h4>Teams Working on this Project</h4>
 			</div>
+
+
+
 			<div class="card-body">
 				<c:choose>
-					<c:when test="${not empty teams}">
+					<c:when test="${fn:length(teams) > 0}">
 						<ul class="list-group">
 							<c:forEach var="team" items="${teams}">
-								<li class="list-group-item"><i
-									class="bi bi-people-fill me-2" aria-hidden="true"></i> <c:out
-										value="${team.name}" /></li>
+								<li
+									class="list-group-item d-flex justify-content-between align-items-center">
+									<div>
+										<i class="bi bi-people-fill me-2"></i>
+										<c:out value="${team.name}" />
+									</div>
+									<div>
+										<!-- Button to remove the team -->
+										<form
+											action="${pageContext.request.contextPath}/projects?action=removeTeam"
+											method="post" style="display: inline;">
+											<input type="hidden" name="projectId" value="${project.id}" />
+											<input type="hidden" name="teamId" value="${team.id}" />
+											<button type="submit" class="btn btn-danger btn-sm">
+												<i class="bi bi-trash"></i> Remove
+											</button>
+										</form>
+									</div>
+								</li>
 							</c:forEach>
 						</ul>
 					</c:when>
 					<c:otherwise>
 						<p class="text-danger">This project has no team assigned.</p>
-						<a
-							href="${pageContext.request.contextPath}/teams?action=add&projectId=${project.id}"
-							class="btn btn-success"> <i class="bi bi-plus-circle me-2"></i>Add
-							Team
-						</a>
+						<button type="button" class="btn btn-success"
+							data-bs-toggle="modal" data-bs-target="#addTeamModal">
+							<i class="bi bi-plus-circle me-2"></i>Add Team
+						</button>
 					</c:otherwise>
 				</c:choose>
 			</div>
+
+			<!-- Add Team Modal -->
+			<div class="modal fade" id="addTeamModal" tabindex="-1"
+				aria-labelledby="addTeamModalLabel" aria-hidden="true">
+				<div class="modal-dialog">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h5 class="modal-title" id="addTeamModalLabel">Add Team to
+								Project</h5>
+							<button type="button" class="btn-close" data-bs-dismiss="modal"
+								aria-label="Close"></button>
+						</div>
+						<form
+							action="${pageContext.request.contextPath}/projects?action=addToProject"
+							method="post">
+							<div class="modal-body">
+								<input type="hidden" name="projectId" value="${project.id}" />
+								<div class="mb-3">
+									<label for="teamSelect" class="form-label">Select Team
+										(Optional)</label> <select id="teamSelect" name="teamId"
+										class="form-select" disabled>
+										<option value="" selected>Select a team (Optional)</option>
+										<!-- Default option -->
+										<c:forEach var="team" items="${availableTeams}">
+											<option value="${team.id}">${team.name}</option>
+										</c:forEach>
+									</select>
+								</div>
+							</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-secondary"
+									data-bs-dismiss="modal">Close</button>
+								<button type="submit" class="btn btn-primary">Add Team</button>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+
+			<!-- Back Button -->
+
+
+
 		</div>
+
+
 		<hr>
 
 		<div class="text-right mb-3">
@@ -297,8 +364,8 @@
 								class="form-control" id="editAssignedMember"
 								name="assignedMember" required>
 								<c:forEach var="member" items="${members}">
-									<option value="${member.id}">
-										${member.firstName} ${member.lastName}</option>
+									<option value="${member.id}">${member.firstName}
+										${member.lastName}</option>
 								</c:forEach>
 							</select>
 

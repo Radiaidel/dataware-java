@@ -95,27 +95,26 @@
     </table>
 
     <!-- Pagination -->
-    <div class="row justify-content-center mt-4">
-        <nav aria-label="Page navigation">
-            <ul class="pagination">
-                <li class="page-item <c:if test="${currentPage == 1}">disabled</c:if>">
-                    <a class="page-link" href="?page=${previousPage}" aria-label="Previous">
-                        <span aria-hidden="true">&laquo;</span>
-                    </a>
+<div class="row justify-content-center mt-4">
+    <nav aria-label="Page navigation">
+        <ul class="pagination">
+            <li class="page-item <c:if test="${currentPage == 1 || totalProjects <= itemsPerPage}">disabled</c:if>">
+                <a class="page-link" href="?page=${previousPage}" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            <c:forEach var="i" begin="1" end="${lastPage}">
+                <li class="page-item <c:if test="${i == currentPage}">active</c:if>">
+                    <a class="page-link" href="?page=${i}">${i}</a>
                 </li>
-                <c:forEach var="i" begin="1" end="${lastPage}">
-                    <li class="page-item <c:if test="${i == currentPage}">active</c:if>">
-                        <a class="page-link" href="?page=${i}">${i}</a>
-                    </li>
-                </c:forEach>
-                <li class="page-item <c:if test="${currentPage == lastPage}">disabled</c:if>">
-                    <a class="page-link" href="?page=${nextPage}" aria-label="Next">
-                        <span aria-hidden="true">&raquo;</span>
-                    </a>
-                </li>
-            </ul>
-        </nav>
-    </div>
+            </c:forEach>
+            <li class="page-item <c:if test="${currentPage == lastPage || totalProjects <= itemsPerPage}">disabled</c:if>">
+                <a class="page-link" href="?page=${nextPage}" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
 </div>
 
 
