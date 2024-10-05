@@ -19,6 +19,9 @@ public class Project {
 	      this.endDate = endDate;
 		 this.status=status;
 	}
+	public Project(String string, String string2) {
+		
+	}
 	public int getId() {
 		return id;
 	}

@@ -1,6 +1,9 @@
 package com.dataware.repository.impl;
 
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.stream.Collectors;
 
 import com.dataware.database.DatabaseConnection;
@@ -15,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ProjectRepositoryImpl implements ProjectRepository{
+    private static final Logger logger = LoggerFactory.getLogger(ProjectRepositoryImpl.class);
 
 	@Override
 	public void createProject(Project project) {
@@ -30,9 +34,9 @@ public class ProjectRepositoryImpl implements ProjectRepository{
 	            preparedStatement.setString(5, project.getStatus().name());
 
 	            preparedStatement.executeUpdate();
-	            System.out.println("Project created successfully.");
+	            logger.info("Project '{}' created successfully.", project.getName());
 	        } catch (SQLException e) {
-	            e.printStackTrace();
+	        	logger.error("Failed to create project '{}': {}", project.getName(), e.getMessage());
 	        }
 		
 	}
@@ -79,12 +83,71 @@ public class ProjectRepositoryImpl implements ProjectRepository{
 	                teams.add(team);
 	            }
 	        }
+	        logger.info("Retrieved project with ID {}: {}", id, project);
 	    } catch (SQLException e) {
-	        e.printStackTrace();
+	        logger.error("Failed to retrieve project with ID {}: {}", id, e.getMessage());
 	    }
 	    
 	    return new ProjectWithTeam(project, teams);
 	}
+	
+	public List<Team> getAvailableTeamsForProject(int projectId) {
+	    String sql = "SELECT t.* FROM team t " +
+	                 "LEFT JOIN project_team pt ON t.id = pt.team_id " +
+	                 "LEFT JOIN project p ON pt.project_id = p.id " +
+	                 "WHERE pt.team_id IS NULL " + 
+	                 "   OR p.status = 'Completed'";
+
+	    List<Team> availableTeams = new ArrayList<>();
+
+	    try (Connection connection = DatabaseConnection.getInstance().getConnection();
+	         PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+	        ResultSet resultSet = preparedStatement.executeQuery();
+	        while (resultSet.next()) {	        
+	            Team team = new Team();
+	            team.setId(resultSet.getInt("id"));
+	            team.setName(resultSet.getString("name"));
+	            availableTeams.add(team);
+	        }
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+	    return availableTeams;
+	}
+	public boolean addTeamToProject(int projectId, int teamId) {
+	    String sql = "INSERT INTO project_team (project_id, team_id) VALUES (?, ?)";
+
+	    try (Connection connection = DatabaseConnection.getInstance().getConnection();
+	         PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+
+	        preparedStatement.setInt(1, projectId);
+	        preparedStatement.setInt(2, teamId);
+	        int rowsAffected = preparedStatement.executeUpdate();
+
+	        logger.info("Added team ID {} to project ID {}.", teamId, projectId);
+	        return rowsAffected > 0;
+	    } catch (SQLException e) {
+	        logger.error("Failed to add team ID {} to project ID {}: {}", teamId, projectId, e.getMessage());
+	    }
+	    return false;
+	}
+	
+	public void removeTeamFromProject(int projectId, int teamId) {
+	    String sql = "DELETE FROM project_team WHERE project_id = ? AND team_id = ?";
+
+	    try (Connection connection = DatabaseConnection.getInstance().getConnection();
+	         PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+	        
+	        preparedStatement.setInt(1, projectId);
+	        preparedStatement.setInt(2, teamId);
+	        preparedStatement.executeUpdate();
+
+	        logger.info("Removed team ID {} from project ID {}.", teamId, projectId);
+	    } catch (SQLException e) {
+	        logger.error("Failed to remove team ID {} from project ID {}: {}", teamId, projectId, e.getMessage());
+	    }
+	}
+
 	@Override
 	public List<Project> getAllProjects(int page, int size) {
 	    List<Project> projects = new ArrayList<>();
@@ -107,8 +170,9 @@ public class ProjectRepositoryImpl implements ProjectRepository{
 	            project.setId(resultSet.getInt("id"));
 	            projects.add(project);
 	        }
+	        logger.info("Retrieved {} projects for page {}.", projects.size(), page);
 	    } catch (SQLException e) {
-	        e.printStackTrace();
+	        logger.error("Failed to retrieve projects for page {}: {}", page, e.getMessage());
 	    }
 	    return projects;
 	}
@@ -128,9 +192,9 @@ public class ProjectRepositoryImpl implements ProjectRepository{
             preparedStatement.setInt(6, project.getId());
 
             preparedStatement.executeUpdate();
-            System.out.println("Project updated successfully.");
+            logger.info("Project ID {} updated successfully.", project.getId());
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error("Failed to update project ID {}: {}", project.getId(), e.getMessage());
         }
 		
 	}
@@ -144,9 +208,9 @@ public class ProjectRepositoryImpl implements ProjectRepository{
              
             preparedStatement.setInt(1, id);
             preparedStatement.executeUpdate();
-            System.out.println("Project deleted successfully.");
+            logger.info("Project ID {} deleted successfully.", id);
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error("Failed to delete project ID {}: {}", id, e.getMessage());
         }
 		
 	}
@@ -169,8 +233,9 @@ public class ProjectRepositoryImpl implements ProjectRepository{
 	            projects.add(project);
 	        }
 
+	        logger.info("Found {} projects matching the query '{}'.", projects.size(), query);
 	    } catch (SQLException e) {
-	        e.printStackTrace(); 
+	        logger.error("Failed to search projects for query '{}': {}", query, e.getMessage());
 	    }
 
 	    return projects; 
