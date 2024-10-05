@@ -17,8 +17,16 @@ public class MemberRepositoryImpl implements MemberRepository {
     public MemberRepositoryImpl() {
         this.connection = DatabaseConnection.getInstance().getConnection();
     }
+    
+    
 
-    @Override
+    public MemberRepositoryImpl(Connection connection) {
+		this.connection = connection;
+	}
+
+
+
+	@Override
     public void addMember(Member member) {
         String sql = "INSERT INTO Member (first_name, last_name, email, role) VALUES (?, ?, ?, ?)";
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -175,4 +183,16 @@ public class MemberRepositoryImpl implements MemberRepository {
         return members;
     }
 
+	  public int getLastInsertedId() {
+	        String query = "SELECT LAST_INSERT_ID()";
+	        try (PreparedStatement pstmt = connection.prepareStatement(query);
+	             ResultSet rs = pstmt.executeQuery()) {
+	            if (rs.next()) {
+	                return rs.getInt(1);
+	            }
+	        } catch (SQLException e) {
+	            e.printStackTrace();
+	        }
+	        return -1; // Retourne -1 si aucun ID n'a été trouvé ou en cas d'erreur
+	    }
 }

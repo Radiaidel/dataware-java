@@ -204,5 +204,17 @@ public class ProjectRepositoryImpl implements ProjectRepository{
 
 	        return count;
 	}
+    public int getLastInsertedId() {
+        String query = "SELECT LAST_INSERT_ID()";
+        try (PreparedStatement pstmt = connection.prepareStatement(query);
+             ResultSet rs = pstmt.executeQuery()) {
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return -1; // Retourne -1 si aucun ID n'a été trouvé ou en cas d'erreur
+    }
 
 }

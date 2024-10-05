@@ -11,4 +11,7 @@ public interface TaskRepository {
 	boolean deleteTask(int id);
 	Optional<List<Task>> displayAll(int pageNumber, int pageSize);
 	int getTotalTasks();
+	Optional<Task> getTaskById(int id) ;
+	int getLastInsertedId();
+
 }
